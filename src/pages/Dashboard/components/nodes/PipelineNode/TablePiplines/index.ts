@@ -1,0 +1,1 @@
+export { TablePiplines } from './TablePiplines';

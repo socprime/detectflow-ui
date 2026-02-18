@@ -1,0 +1,39 @@
+.btn {
+  &:not(.disabled),
+  &:not(disabled) {
+    cursor: pointer;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  &--icon {
+    &:disabled {
+      pointer-events: all;
+      background-color: transparent;
+      color: var(--color-subdued);
+    }
+  }
+
+  // &:focus-visible {
+  //   box-shadow: 0 0 0 3px var(--color-ring);
+  //   border-color: var(--color-ring);
+  // }
+
+  &[aria-invalid='true'] {
+    box-shadow: 0 0 0 3px var(--color-destructive);
+    border-color: var(--color-destructive);
+  }
+
+  & svg {
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+  & svg:not([class*='size-']):not([width]):not([height]) {
+    width: 1em;
+    height: 1em;
+  }
+}

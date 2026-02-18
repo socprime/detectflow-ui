@@ -1,0 +1,44 @@
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animated-gradient-border {
+  position: relative;
+  border-radius: 0.5rem;
+  padding: 2px;
+  overflow: hidden;
+  &::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      palette.$actionPrimaryDefault,
+      palette.$backgroundScienceBlue,
+      palette.$backgroundBroom,
+      palette.$actionPrimaryDefault
+    );
+    animation: rotate 8s linear infinite;
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: palette.$backgroundBlueLight;
+    border-radius: calc(0.5rem - 2px);
+    z-index: 1;
+  }
+}
+
+.animated-gradient-content {
+  position: relative;
+  z-index: 2;
+}

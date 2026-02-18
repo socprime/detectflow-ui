@@ -1,0 +1,20 @@
+export const SentinelIcon = ({
+  size = 16,
+  className = '',
+}: {
+  size?: number;
+  className?: string;
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 18 18"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path d="M9 0L0 5.0625V9L9 13.5L18 9V5.0625L9 0Z" fill="currentColor" opacity="0.6" />
+    <path d="M9 4.5L3.375 7.3125V9L9 11.8125L14.625 9V7.3125L9 4.5Z" fill="currentColor" />
+    <path d="M0 9V12.9375L9 18L18 12.9375V9L9 13.5L0 9Z" fill="currentColor" opacity="0.8" />
+  </svg>
+);

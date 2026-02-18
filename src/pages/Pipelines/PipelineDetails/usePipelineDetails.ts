@@ -1,0 +1,177 @@
+import { usePagination, useSearch, useSorting } from '@/hooks';
+import { PaginationParams } from '@/models/providers/Types/Request';
+import { usePipelinesStore } from '@/store/pipelines';
+import { convertSortingToApiParams } from '@/utils/tableSorting';
+import { getCoreRowModel, type RowSelectionState, useReactTable } from '@tanstack/react-table';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { createColumns } from './columns';
+
+export interface RuleDialogParams {
+  ruleId: string;
+  repositoryId?: string;
+}
+
+export const usePipelineDetails = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pipelineId = searchParams.get('pipelineId');
+  const ruleIdFromUrl = searchParams.get('ruleId');
+  const {
+    loading,
+    pipeline,
+    pipelineRules,
+    fetchPipelineById,
+    fetchPipelineRules,
+    updatePipelineRule,
+  } = usePipelinesStore();
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [isRuleDialogOpen, setIsRuleDialogOpen] = useState(!!ruleIdFromUrl);
+  const { search, debouncedSearch, setSearch } = useSearch();
+  const { page, limit, setPage } = usePagination();
+  const { sorting, handleSortingChange } = useSorting({ setPage });
+  const taggedFilterFromUrl = searchParams.get('tagged_filter');
+  const [hideUnmatchedRules, setHideUnmatchedRules] = useState(taggedFilterFromUrl === 'tagged');
+
+  const rules = useMemo(() => pipelineRules?.data || [], [pipelineRules]);
+  const total = useMemo(() => pipelineRules?.total || 0, [pipelineRules?.total]);
+  const totalPages = useMemo(() => Math.ceil(total / limit), [total, limit]);
+
+  useEffect(() => {
+    if (pipelineId) {
+      fetchPipelineById(pipelineId);
+    }
+  }, [pipelineId, fetchPipelineById]);
+
+  useEffect(() => {
+    const isTaggedOnly = searchParams.get('tagged_filter') === 'tagged';
+    if (isTaggedOnly !== hideUnmatchedRules) {
+      setHideUnmatchedRules(isTaggedOnly);
+    }
+  }, [searchParams, hideUnmatchedRules]);
+
+  const selectedRuleIds = useMemo(() => Object.keys(rowSelection), [rowSelection]);
+
+  const params: PaginationParams = useMemo(() => {
+    const { sort, order } = convertSortingToApiParams(sorting);
+    return {
+      page,
+      offset: (page - 1) * limit,
+      limit,
+      search: debouncedSearch || undefined,
+      tagged_filter: hideUnmatchedRules ? 'tagged' : undefined,
+      sort: sort || 'name',
+      order: order || 'asc',
+    };
+  }, [debouncedSearch, page, limit, sorting, hideUnmatchedRules]);
+
+  const handleActivateRules = useCallback(
+    async (status: 'enable' | 'disable') => {
+      if (!pipelineId || selectedRuleIds.length === 0) {
+        return;
+      }
+
+      try {
+        const promises = selectedRuleIds.map((ruleId) =>
+          updatePipelineRule(pipelineId, ruleId, status),
+        );
+        await Promise.all(promises);
+
+        toast.success(
+          `Successfully ${status === 'enable' ? 'activated' : 'deactivated'} ${selectedRuleIds.length} rule${selectedRuleIds.length > 1 ? 's' : ''}`,
+        );
+        fetchPipelineRules(pipelineId, params);
+        fetchPipelineById(pipelineId);
+        setRowSelection({});
+      } catch (error) {
+        toast.error(`Failed to ${status === 'enable' ? 'activate' : 'deactivate'} rules`);
+        console.error('Failed to update rules:', error);
+      }
+    },
+    [
+      pipelineId,
+      selectedRuleIds,
+      updatePipelineRule,
+      params,
+      fetchPipelineRules,
+      fetchPipelineById,
+    ],
+  );
+
+  useEffect(() => {
+    if (pipelineId) {
+      fetchPipelineRules(pipelineId, params);
+    }
+  }, [pipelineId, params]);
+
+  const handleCloseRuleDialog = useCallback(() => {
+    setIsRuleDialogOpen(false);
+    searchParams.delete('ruleId');
+    searchParams.delete('repositoryId');
+    setSearchParams(searchParams, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const handleTaggedFilterChange = useCallback(
+    (checked: boolean) => {
+      setHideUnmatchedRules(checked);
+      if (checked) {
+        searchParams.set('tagged_filter', 'tagged');
+      } else {
+        searchParams.delete('tagged_filter');
+      }
+      setSearchParams(searchParams, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
+
+  const handleOpenRuleDialogWithId = useCallback(
+    ({ ruleId, repositoryId }: RuleDialogParams) => {
+      searchParams.set('ruleId', ruleId);
+      if (repositoryId) {
+        searchParams.set('repositoryId', repositoryId);
+      }
+      setSearchParams(searchParams, { replace: true });
+      setIsRuleDialogOpen(true);
+    },
+    [searchParams, setSearchParams],
+  );
+
+  const columns = useMemo(
+    () => createColumns(handleOpenRuleDialogWithId),
+    [handleOpenRuleDialogWithId],
+  );
+
+  const table = useReactTable({
+    data: rules,
+    columns,
+    state: {
+      rowSelection,
+      sorting,
+    },
+    enableRowSelection: true,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => row.id,
+    onRowSelectionChange: setRowSelection,
+    onSortingChange: handleSortingChange,
+  });
+
+  return {
+    loading,
+    isRuleDialogOpen,
+    pipeline,
+    table,
+    page,
+    rules,
+    totalPages,
+    search,
+    selectedRules: selectedRuleIds,
+    rowSelection,
+    columns,
+    hideUnmatchedRules,
+    setHideUnmatchedRules: handleTaggedFilterChange,
+    setPage,
+    setSearch,
+    handleCloseRuleDialog,
+    handleActivateRules,
+  };
+};
