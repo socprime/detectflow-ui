@@ -46,7 +46,14 @@ src/
 - Node.js 18+
 - Yarn (recommended) or npm
 
-## Installation
+### Docker
+
+```bash
+docker build -t detectflow-matchnode .
+docker run -p 8000:8000 --env-file .env detectflow-matchnode
+```
+
+## Development
 
 ```bash
 git clone <your-fork-or-repo-url>
@@ -62,7 +69,6 @@ npm install
 
 ## Run Locally
 
-Development mode:
 
 ```bash
 yarn watch
