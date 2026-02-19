@@ -1,6 +1,7 @@
 # DetectFlow UI
 
 Web interface for administering DetectFlow pipelines.
+This project is a component of SOC Prime DetectFlow OSS. See its [README](https://github.com/socprime/detectflow-main) for more details and instructions.
 
 ## Description
 
