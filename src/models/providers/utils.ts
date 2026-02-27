@@ -4,8 +4,8 @@ import { isLoginEndpoint, isLogoutEndpoint, isRefreshEndpoint } from './constant
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
-const REFRESH_MAX_RETRIES = 3;
-const REFRESH_RETRY_DELAY_MS = 1500;
+const REFRESH_MAX_RETRIES = 1;
+const REFRESH_RETRY_DELAY_MS = 1000;
 
 const getAccessToken = (): string | null => {
   return useAuthStore.getState().accessToken;
@@ -60,6 +60,14 @@ async function refreshAccessToken(): Promise<string> {
   }
 }
 
+async function extractErrorData(response: Response): Promise<ApiError> {
+  const contentType = response.headers.get('content-type');
+  const errorData = contentType?.includes('application/json')
+    ? await response.json()
+    : await response.text();
+  return new ApiError(response.status, response.statusText, errorData);
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   const accessToken = getAccessToken();
@@ -100,15 +108,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
         const retryResponse = await fetch(url, retryConfig);
 
         if (!retryResponse.ok) {
-          const contentType = retryResponse.headers.get('content-type');
-          let errorData;
-          if (contentType && contentType.includes('application/json')) {
-            errorData = await retryResponse.json();
-          } else {
-            errorData = await retryResponse.text();
-          }
-
-          const apiError = new ApiError(retryResponse.status, retryResponse.statusText, errorData);
+          const apiError = await extractErrorData(retryResponse);
 
           if (retryResponse.status === 401) {
             useAuthStore.getState().forceLogout();
@@ -127,14 +127,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     }
 
     if (!response.ok) {
-      const contentType = response.headers.get('content-type');
-      let errorData;
-      if (contentType && contentType.includes('application/json')) {
-        errorData = await response.json();
-      } else {
-        errorData = await response.text();
-      }
-      throw new ApiError(response.status, response.statusText, errorData);
+      throw await extractErrorData(response);
     }
 
     return await parseResponse<T>(response);

@@ -1,8 +1,10 @@
+type ApiErrorData = string | Record<string, unknown>;
+
 export class ApiError extends Error {
   constructor(
     public status: number,
     public statusText: string,
-    public data?: any,
+    public data?: ApiErrorData,
   ) {
     let message = `API Error: ${status} ${statusText}`;
 
@@ -31,11 +33,11 @@ export class ApiError extends Error {
         } else {
           message = data;
         }
-      } else if (data.message) {
+      } else if ('message' in data && typeof data.message === 'string') {
         message = data.message;
-      } else if (data.detail) {
+      } else if ('detail' in data && typeof data.detail === 'string') {
         message = data.detail;
-      } else if (data.error) {
+      } else if ('error' in data && typeof data.error === 'string') {
         message = data.error;
       } else {
         try {

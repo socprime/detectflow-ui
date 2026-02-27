@@ -9,7 +9,8 @@ import React from 'react';
 import { useFilters } from './useFilter';
 
 export const Filters: React.FC = () => {
-  const { loading, search, table, page, columns, totalPages, setSearch, setPage } = useFilters();
+  const { loading, search, table, page, limit, columns, totalPages, setSearch, setPage, setLimit } =
+    useFilters();
 
   return (
     <div className="flex h-full w-full flex-col gap-6">
@@ -31,7 +32,13 @@ export const Filters: React.FC = () => {
         </>
       </PageHeader>
       <TableWrap table={table} columns={columns} loading={loading} />
-      <PaginationWrap page={page} totalPages={totalPages} onPageChange={setPage} />
+      <PaginationWrap
+        page={page}
+        totalPages={totalPages}
+        limit={limit}
+        setLimit={setLimit}
+        onPageChange={setPage}
+      />
     </div>
   );
 };

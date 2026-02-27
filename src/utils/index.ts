@@ -5,5 +5,4 @@ export * from './environment';
 export * from './format';
 export * from './mergeClass';
 export * from './queryParams';
-export * from './sessionStorage';
 export * from './tableSorting';

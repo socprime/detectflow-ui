@@ -11,7 +11,8 @@ export const useRepositoriesTable = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlRepositoryId = searchParams.get('repositoryId');
   const { loading, rules, fetchRules } = useRulesStore();
-  const { activeRepositoryId, setActiveRepositoryId, getRepositoryById } = useRepositoriesStore();
+  const { activeRepositoryId, setActiveRepositoryId, getRepositoryById, syncProcessing } =
+    useRepositoriesStore();
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isCreateRepoDialogOpen, setIsCreateRepoDialogOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -35,7 +36,7 @@ export const useRepositoriesTable = () => {
     }
   }, [repositoryId, urlRepositoryId, activeRepositoryId, searchParams, setActiveRepositoryId]);
 
-  const { page, limit, setPage } = usePagination();
+  const { page, limit, setPage, setLimit } = usePagination();
   const totalPages = useMemo(() => {
     return Math.ceil((rules?.total ?? 0) / limit);
   }, [rules?.total, limit]);
@@ -90,6 +91,7 @@ export const useRepositoriesTable = () => {
 
   return {
     loading,
+    syncProcessing,
     table,
     page,
     limit,
@@ -101,6 +103,7 @@ export const useRepositoriesTable = () => {
     repositoryId,
     search,
     setPage,
+    setLimit,
     setSearch,
     handleOpenUploadDialog,
     handleCloseUploadDialog,

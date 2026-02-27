@@ -25,6 +25,7 @@ export const CreateRepository: React.FC<CreateRepositoryDialogProps> = ({ isOpen
     addSocprimeRepositories,
     addExternalRepositories,
     fetchAvailableRepositories,
+    syncRepositories,
   } = useRepositoriesStore();
   const [isApiSettingsOpen, setIsApiSettingsOpen] = useState(false);
   const [selectedSocPrimeIds, setSelectedSocPrimeIds] = useState<string[]>([]);
@@ -68,6 +69,7 @@ export const CreateRepository: React.FC<CreateRepositoryDialogProps> = ({ isOpen
     try {
       await addSocprimeRepositories({ repository_ids: selectedSocPrimeIds });
       toast.success('Repository added successfully');
+      await syncRepositories();
       await Promise.all([fetchRepositories(), fetchAvailableRepositories()]);
       setSelectedSocPrimeIds([]);
     } catch (error) {
@@ -80,6 +82,7 @@ export const CreateRepository: React.FC<CreateRepositoryDialogProps> = ({ isOpen
     try {
       await addExternalRepositories({ repository_ids: selectedThirdPartyIds });
       toast.success('Repository added successfully');
+      await syncRepositories();
       await Promise.all([fetchRepositories(), fetchAvailableRepositories()]);
       setSelectedThirdPartyIds([]);
     } catch (error) {

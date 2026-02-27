@@ -12,7 +12,8 @@ import { LogSourcesEmptyState } from './LogSourcesEmptyState';
 import { useLogSources } from './useLogSources';
 
 export const LogSources: React.FC = () => {
-  const { loading, search, logSources, page, totalPages, setPage, setSearch } = useLogSources();
+  const { loading, search, logSources, page, limit, totalPages, setPage, setSearch, setLimit } =
+    useLogSources();
 
   return (
     <div className="flex h-full w-full flex-col gap-6">
@@ -55,7 +56,13 @@ export const LogSources: React.FC = () => {
                   <LogSourcesCard className="flex-1" logSource={logSource} key={logSource.id} />
                 ))}
               </div>
-              <PaginationWrap page={page} totalPages={totalPages} onPageChange={setPage} />
+              <PaginationWrap
+                page={page}
+                totalPages={totalPages}
+                limit={limit}
+                setLimit={setLimit}
+                onPageChange={setPage}
+              />
             </>
           ) : (
             <LogSourcesEmptyState />

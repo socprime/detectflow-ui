@@ -7,6 +7,7 @@ import { TableWrap } from '@/components/Table';
 import { routeHelpers, routes } from '@/models/router/routes';
 import { Rule } from '@/pages/Settings/Repositories/Rule';
 import { ActivityIcon, AlertCircle, CheckCircle2, HashIcon, SettingsIcon } from 'lucide-react';
+import { PipelineDescription } from './PipelineDescription';
 import { usePipelineDetails } from './usePipelineDetails';
 
 export const PipelineDetails = () => {
@@ -23,9 +24,11 @@ export const PipelineDetails = () => {
     isRuleDialogOpen,
     columns,
     hideUnmatchedRules,
+    limit,
     setHideUnmatchedRules,
     setPage,
     setSearch,
+    setLimit,
     handleCloseRuleDialog,
     handleActivateRules,
   } = usePipelineDetails();
@@ -35,11 +38,7 @@ export const PipelineDetails = () => {
       <PageHeader
         loading={loading}
         title={pipeline?.name}
-        description={
-          pipeline?.source_topics || pipeline?.destination_topic
-            ? `Pipeline: ${pipeline?.source_topics ? pipeline?.source_topics.join(' -> ') : ''}${pipeline?.destination_topic}`
-            : 'Pipeline'
-        }
+        description={pipeline ? <PipelineDescription pipeline={pipeline} /> : 'Pipeline Details'}
         backLink={routes.pipelines}
       >
         <Button
@@ -171,7 +170,13 @@ export const PipelineDetails = () => {
         data={rules}
         rowSelection={rowSelection}
       />
-      <PaginationWrap page={page} totalPages={totalPages} onPageChange={setPage} />
+      <PaginationWrap
+        page={page}
+        totalPages={totalPages}
+        limit={limit}
+        setLimit={setLimit}
+        onPageChange={setPage}
+      />
       {isRuleDialogOpen && (
         <div className="absolute inset-0">
           <div className="bg-primary p-6">

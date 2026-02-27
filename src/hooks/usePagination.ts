@@ -24,7 +24,7 @@ export interface UsePaginationReturn {
 export const usePagination = (options: UsePaginationOptions = {}): UsePaginationReturn => {
   const {
     defaultPage = 1,
-    defaultLimit = 10,
+    defaultLimit = 25,
     pageParamName = 'page',
     limitParamName = 'limit',
     onPageChange,
@@ -85,10 +85,10 @@ export const usePagination = (options: UsePaginationOptions = {}): UsePagination
   return {
     page,
     limit,
+    searchParams,
     setPage,
     setLimit,
     resetPage,
-    searchParams,
     setSearchParams,
   };
 };

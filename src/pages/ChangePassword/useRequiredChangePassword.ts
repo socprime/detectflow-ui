@@ -21,16 +21,28 @@ export const useRequiredChangePassword = () => {
     formState: { errors },
   } = useForm<ChangePasswordForm>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { setMustChangePassword, isAuthenticated, mustChangePassword } = useAuthStore();
+  const {
+    isAuthenticated,
+    mustChangePassword,
+    isInitialized,
+    loading,
+    setMustChangePassword,
+    ensureInitialized,
+  } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!isInitialized) {
+      void ensureInitialized();
+      return;
+    }
+
     if (!isAuthenticated) {
       navigate(routes.login, { replace: true });
     } else if (!mustChangePassword) {
       navigate(routes.dashboard, { replace: true });
     }
-  }, [isAuthenticated, mustChangePassword, navigate]);
+  }, [isInitialized, ensureInitialized, isAuthenticated, mustChangePassword, navigate]);
 
   const onChangePassword = async (data: ChangePasswordForm) => {
     setIsSubmitting(true);
@@ -54,6 +66,7 @@ export const useRequiredChangePassword = () => {
   };
 
   return {
+    authLoading: loading || !isInitialized,
     isSubmitting,
     errors,
     mustChangePassword,

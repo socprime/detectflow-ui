@@ -56,8 +56,16 @@ export default defineConfig(({ mode }) => {
       allowedHosts: (env.VITE_PREVIEW_ALLOWED_HOSTS || 'localhost,127.0.0.1')
         .split(',')
         .map((host) => host.trim()),
+      headers: {
+        'X-Frame-Options': 'DENY',
+        'Content-Security-Policy': "frame-ancestors 'none'",
+      },
     },
     server: {
+      headers: {
+        'X-Frame-Options': 'DENY',
+        'Content-Security-Policy': "frame-ancestors 'none'",
+      },
       proxy: {
         '/api': {
           target: env.VITE_API_PROXY_TARGET || 'http://localhost:8000',

@@ -4,7 +4,7 @@ import { useEffect, useMemo } from 'react';
 
 export const useLogSources = () => {
   const { loading, logSources: logSourcesList, fetchLogSources } = useLogSourcesStore();
-  const { page, limit, setPage } = usePagination();
+  const { page, limit, setPage, setLimit } = usePagination();
   const { search, debouncedSearch, setSearch } = useSearch();
 
   const logSources = useMemo(() => {
@@ -31,8 +31,10 @@ export const useLogSources = () => {
     logSources,
     search,
     page,
+    limit,
     totalPages,
     setSearch,
     setPage,
+    setLimit,
   };
 };

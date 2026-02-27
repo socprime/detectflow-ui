@@ -8,8 +8,19 @@ import { PlusIcon } from 'lucide-react';
 import { usePipelines } from './usePipelines';
 
 export const Pipelines: React.FC = () => {
-  const { search, loading, table, data, page, totalPages, columns, setPage, setSearch } =
-    usePipelines();
+  const {
+    search,
+    loading,
+    table,
+    data,
+    page,
+    limit,
+    totalPages,
+    columns,
+    setPage,
+    setSearch,
+    setLimit,
+  } = usePipelines();
 
   return (
     <section className="flex w-full flex-col gap-6 p-6">
@@ -37,7 +48,13 @@ export const Pipelines: React.FC = () => {
         classNameHeader="px-3"
         classNameCell="px-3"
       />
-      <PaginationWrap page={page} totalPages={totalPages} onPageChange={setPage} />
+      <PaginationWrap
+        page={page}
+        totalPages={totalPages}
+        limit={limit}
+        setLimit={setLimit}
+        onPageChange={setPage}
+      />
     </section>
   );
 };

@@ -1,6 +1,6 @@
 import { routes } from '@/models/router/routes';
 import { useAuthStore } from '@/store/auth';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -18,9 +18,10 @@ export const useLogin = () => {
   } = useForm<LoginForm>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { login, error, clearError } = useAuthStore();
+  const { login, error, clearError, isAuthenticated, user, mustChangePassword } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const isLoggingIn = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -35,8 +36,33 @@ export const useLogin = () => {
     }
   }, [error, clearError]);
 
+  const getRedirectPath = (): string => {
+    const from = (location.state as { from?: { pathname: string; search?: string; hash?: string } })
+      ?.from;
+
+    if (!from?.pathname) return routes.dashboard;
+
+    const path = `${from.pathname}${from.search || ''}${from.hash || ''}`;
+    if (!path.startsWith('/') || path.startsWith('//')) return routes.dashboard;
+
+    return path;
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated || !user || isLoggingIn.current) {
+      return;
+    }
+    if (mustChangePassword) {
+      navigate(routes.changePassword, { replace: true });
+      return;
+    }
+
+    navigate(getRedirectPath(), { replace: true });
+  }, [isAuthenticated, user, mustChangePassword, location.state, navigate]);
+
   const onLogin = async (data: LoginForm) => {
     setIsSubmitting(true);
+    isLoggingIn.current = true;
     try {
       const result = await login(data.email, data.password.trim());
 
@@ -44,21 +70,25 @@ export const useLogin = () => {
         navigate(routes.changePassword, { replace: true });
         toast.info('Please change your password to continue');
       } else {
-        const from = (
-          location.state as { from?: { pathname: string; search?: string; hash?: string } }
-        )?.from;
-        const fromPath = from
-          ? `${from.pathname}${from.search || ''}${from.hash || ''}`
-          : routes.dashboard;
-        navigate(fromPath, { replace: true });
+        navigate(getRedirectPath(), { replace: true });
         toast.success('Successfully logged in');
       }
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch {
+      toast.error('Failed to login');
+      console.error('Failed to login', error);
     } finally {
+      isLoggingIn.current = false;
       setIsSubmitting(false);
     }
   };
 
-  return { onLogin, isSubmitting, errors, register, handleSubmit, showPassword, setShowPassword };
+  return {
+    showPassword,
+    isSubmitting,
+    errors,
+    onLogin,
+    register,
+    handleSubmit,
+    setShowPassword,
+  };
 };

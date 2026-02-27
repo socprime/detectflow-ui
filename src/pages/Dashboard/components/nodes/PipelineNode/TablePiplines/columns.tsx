@@ -79,6 +79,15 @@ export const columns: ColumnDef<SSEPipelineStat>[] = [
                 <span className="text-critical capitalize">{status}</span>
               </Badge>
             </Tooltip>
+          ) : severity === 'warning' ? (
+            <Tooltip
+              content={row.original.status_details?.warnings?.join(', ')}
+              className="max-w-[350px] break-all"
+            >
+              <Badge variant="warning">
+                <span className="text-warning capitalize">{status}</span>
+              </Badge>
+            </Tooltip>
           ) : (
             <Badge variant={variant}>
               <span className={`${textColor} capitalize`}>{status}</span>

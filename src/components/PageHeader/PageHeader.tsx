@@ -10,7 +10,7 @@ interface PageHeaderProps {
   loading?: boolean;
   title?: string;
   backLink?: string;
-  description?: string;
+  description?: React.ReactNode;
   descriptionSize?: 'sm' | 'md';
   className?: string;
   children?: React.ReactNode;
@@ -42,14 +42,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             loadedContent={<h2 className="text-default text-xl font-medium break-all">{title}</h2>}
           />
           {description && (
-            <p
+            <div
               className={cn(
                 'text-gray-chateau break-all',
                 descriptionSize === 'sm' ? 'text-2xs' : 'text-sm',
               )}
             >
               {description}
-            </p>
+            </div>
           )}
         </div>
       </div>

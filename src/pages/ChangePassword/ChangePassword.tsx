@@ -1,6 +1,7 @@
 import { Button } from '@/components/Button';
 import { ChangePasswordFields } from '@/components/Form';
 import { Logo } from '@/components/Header/Logo';
+import { SpinnerSquare } from '@/components/Loading';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useRequiredChangePassword } from './useRequiredChangePassword';
@@ -8,8 +9,12 @@ import { useRequiredChangePassword } from './useRequiredChangePassword';
 import '../Login/Login.scss';
 
 export const ChangePassword: React.FC = () => {
-  const { register, handleSubmit, errors, isSubmitting, onChangePassword, watch } =
+  const { register, handleSubmit, errors, authLoading, isSubmitting, onChangePassword, watch } =
     useRequiredChangePassword();
+
+  if (authLoading) {
+    return <SpinnerSquare />;
+  }
 
   return (
     <div className="bg-primary flex min-h-screen items-center justify-center px-4">

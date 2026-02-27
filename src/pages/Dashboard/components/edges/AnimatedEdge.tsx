@@ -15,24 +15,13 @@ export const AnimatedEdge = ({
   style = {},
   data,
 }: EdgeProps) => {
-  const initialCoordsRef = useRef({
+  const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
+    sourcePosition,
     targetX,
     targetY,
-    sourcePosition,
     targetPosition,
-  });
-
-  const coords = initialCoordsRef.current;
-
-  const [edgePath] = getBezierPath({
-    sourceX: coords.sourceX,
-    sourceY: coords.sourceY,
-    sourcePosition: coords.sourcePosition,
-    targetX: coords.targetX,
-    targetY: coords.targetY,
-    targetPosition: coords.targetPosition,
   });
   const { success } = useThemeColors();
 
@@ -43,7 +32,6 @@ export const AnimatedEdge = ({
   const shouldAnimateOnMount = data?.shouldAnimateOnMount !== false;
   const isDimmed = (data?.isDimmed as boolean) || false;
   const disableAnimation = (data?.disableAnimation as boolean) || false;
-
   const hasCompletedInitialAnimation = useRef(false);
   const [visible, setVisible] = useState(() => {
     if (!shouldAnimateOnMount) return true;
@@ -71,8 +59,6 @@ export const AnimatedEdge = ({
     }
   }, [visible]);
 
-  const glowId = `glow-${id}`;
-
   const particleDurations = useMemo(
     () => Array.from({ length: particleCount }, () => 2 + Math.random() * 1.5),
     [id, particleCount],
@@ -80,15 +66,6 @@ export const AnimatedEdge = ({
 
   return (
     <>
-      <defs>
-        <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="2" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
       <motion.path
         d={edgePath}
         fill="none"
@@ -113,7 +90,6 @@ export const AnimatedEdge = ({
         Array.from({ length: particleCount }, (_, i) => {
           const commonProps = {
             fill: color,
-            filter: `url(#${glowId})`,
             opacity: 0,
           };
 

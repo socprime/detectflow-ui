@@ -23,6 +23,7 @@ export const RepositoriesAside = () => {
     hasApiKey,
     repositoriesList,
     repositoryId,
+    syncProcessing,
     handleRepositoryLink,
     handleToggleAside,
     handleCloseCreateRepositoryDialog,
@@ -72,7 +73,7 @@ export const RepositoriesAside = () => {
                 variant="icon"
                 size="xxs"
                 onClick={handleRefreshRepositories}
-                loading={state.syncStatusLoading || loading}
+                loading={syncProcessing || loading}
                 disabled={!hasApiKey}
               >
                 <RefreshCwIcon className="size-4" />

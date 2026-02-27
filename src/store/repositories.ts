@@ -34,6 +34,7 @@ interface RepositoriesState {
   repositorySettings: RepositorySettings | null;
   availableRepositories: CombinedAvailableRepository[] | null;
   activeRepositoryId: string;
+  syncProcessing: boolean;
 
   fetchRepositories: (params?: PaginationParams) => Promise<RepositoriesResponse>;
   fetchRepositoryById: (repositoryId: string) => Promise<RepositoryDetailResponse>;
@@ -54,6 +55,7 @@ interface RepositoriesState {
   getRepositoryById: (repositoryId: string | null | undefined) => RepositoriesData | null;
   getGroupedAvailableRepositories: () => GroupedAvailableRepositories;
   updateRepositorySync: (repositoryId: string, sync: boolean) => Promise<StatusResponse>;
+  setSyncStatus: (status: boolean) => void;
   clearError: () => void;
   reset: () => void;
 }
@@ -76,6 +78,7 @@ const initialState: Omit<
   | 'getRepositoryById'
   | 'getGroupedAvailableRepositories'
   | 'updateRepositorySync'
+  | 'setSyncStatus'
   | 'clearError'
   | 'reset'
 > = {
@@ -94,6 +97,7 @@ const initialState: Omit<
   repositorySettings: null,
   availableRepositories: null,
   activeRepositoryId: 'all',
+  syncProcessing: false,
 };
 
 export const useRepositoriesStore = create<RepositoriesState>((set, get) => ({
@@ -190,7 +194,7 @@ export const useRepositoriesStore = create<RepositoriesState>((set, get) => ({
       async () => await api.settings.repositories.syncStatus(),
       set,
       'Failed to fetch sync status',
-      false
+      false,
     ),
 
   updateRepositoryApiKey: (data) =>
@@ -273,6 +277,7 @@ export const useRepositoriesStore = create<RepositoriesState>((set, get) => ({
       set,
       'Failed to update repository sync status',
     ),
+  setSyncStatus: (status) => set({ syncProcessing: status }),
 
   ...createBaseActions(initialState, set),
 }));
