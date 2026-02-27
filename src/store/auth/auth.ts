@@ -4,8 +4,84 @@ import type { UserInfo } from '@/models/providers/Types/Response';
 import { create } from 'zustand';
 import { broadcastLogin, broadcastLogout } from './authSync';
 
+const AUTH_SESSION_HINT_KEY = 'auth_session_hint';
+const REFRESH_BUFFER_MS = 30_000;
+
+const setSessionHint = () => {
+  try {
+    localStorage.setItem(AUTH_SESSION_HINT_KEY, '1');
+  } catch (error) {
+    console.warn('Failed to set auth session hint:', error);
+  }
+};
+
+export const clearSessionHint = () => {
+  try {
+    localStorage.removeItem(AUTH_SESSION_HINT_KEY);
+  } catch (error) {
+    console.warn('Failed to clear auth session hint:', error);
+  }
+};
+
+let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+function base64UrlDecode(str: string): string {
+  const base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+  return atob(padded);
+}
+
+function decodeTokenExp(token: string): number | null {
+  try {
+    const payload = JSON.parse(base64UrlDecode(token.split('.')[1]));
+    return typeof payload.exp === 'number' ? payload.exp : null;
+  } catch {
+    return null;
+  }
+}
+
+export function cancelTokenRefresh() {
+  if (refreshTimer) {
+    clearTimeout(refreshTimer);
+    refreshTimer = null;
+  }
+}
+
+export function scheduleTokenRefresh(token: string) {
+  cancelTokenRefresh();
+
+  const exp = decodeTokenExp(token);
+  if (!exp) return;
+
+  const refreshAt = exp * 1000 - Date.now() - REFRESH_BUFFER_MS;
+  if (refreshAt <= 0) return;
+
+  refreshTimer = setTimeout(async () => {
+    try {
+      const data = await api.auth.refresh();
+      useAuthStore.getState().updateAccessToken(data.access_token);
+    } catch {
+      console.error('Failed to refresh token');
+    }
+  }, refreshAt);
+}
+
+export const resetAuthState = () => {
+  useAuthStore.setState({
+    user: null,
+    accessToken: null,
+    isAuthenticated: false,
+    loading: false,
+    error: null,
+    mustChangePassword: false,
+  });
+  clearSessionHint();
+  cancelTokenRefresh();
+};
+
 interface AuthState {
   loading: boolean;
+  isInitialized: boolean;
   user: UserInfo | null;
   accessToken: string | null;
   isAuthenticated: boolean;
@@ -15,6 +91,7 @@ interface AuthState {
   logout: () => Promise<void>;
   forceLogout: () => void;
   fetchCurrentUser: () => Promise<void>;
+  ensureInitialized: () => Promise<void>;
   clearError: () => void;
   initialize: () => Promise<void>;
   setMustChangePassword: (value: boolean) => void;
@@ -22,26 +99,13 @@ interface AuthState {
   updateAccessToken: (accessToken: string) => void;
 }
 
-const cleanupLegacyStorage = () => {
-  try {
-    const legacyKeys = ['auth-storage', 'access_token'];
-    legacyKeys.forEach((key) => {
-      if (localStorage.getItem(key)) {
-        localStorage.removeItem(key);
-        console.info(`Cleaned up legacy storage key: ${key}`);
-      }
-    });
-  } catch (error) {
-    console.error('Failed to cleanup legacy storage:', error);
-  }
-};
-
 const initialState: Omit<
   AuthState,
   | 'login'
   | 'logout'
   | 'forceLogout'
   | 'fetchCurrentUser'
+  | 'ensureInitialized'
   | 'clearError'
   | 'initialize'
   | 'setMustChangePassword'
@@ -49,6 +113,7 @@ const initialState: Omit<
   | 'updateAccessToken'
 > = {
   loading: false,
+  isInitialized: false,
   error: null,
   user: null,
   accessToken: null,
@@ -74,7 +139,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         error: null,
         mustChangePassword,
       });
-
+      setSessionHint();
+      scheduleTokenRefresh(response.access_token);
       broadcastLogin(response.user, response.access_token);
 
       return { mustChangePassword };
@@ -93,17 +159,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    const { isAuthenticated } = get();
-
-    if (!isAuthenticated) {
-      set({
-        user: null,
-        accessToken: null,
-        isAuthenticated: false,
-        loading: false,
-        error: null,
-        mustChangePassword: false,
-      });
+    if (!get().isAuthenticated) {
+      resetAuthState();
       broadcastLogout();
       return;
     }
@@ -114,28 +171,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       console.debug('Logout API call failed (expected if token expired):', error);
     } finally {
-      set({
-        user: null,
-        accessToken: null,
-        isAuthenticated: false,
-        loading: false,
-        error: null,
-        mustChangePassword: false,
-      });
-
+      resetAuthState();
       broadcastLogout();
     }
   },
 
   forceLogout: () => {
-    set({
-      user: null,
-      accessToken: null,
-      isAuthenticated: false,
-      loading: false,
-      error: null,
-      mustChangePassword: false,
-    });
+    resetAuthState();
+    broadcastLogout();
   },
 
   fetchCurrentUser: async () => {
@@ -153,14 +196,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  ensureInitialized: async () => {
+    const { isInitialized, loading } = get();
+    if (isInitialized || loading) {
+      return;
+    }
+    await get().initialize();
+  },
+
   clearError: () => {
     set({ error: null });
   },
 
   initialize: async () => {
     set({ loading: true });
-
-    cleanupLegacyStorage();
 
     try {
       const refreshData = await api.auth.refresh();
@@ -169,33 +218,34 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         accessToken: refreshData.access_token,
         isAuthenticated: true,
       });
+      setSessionHint();
+      scheduleTokenRefresh(refreshData.access_token);
 
       const user = await api.auth.getCurrentUser();
       set({
         user,
         mustChangePassword: user.must_change_password,
         loading: false,
+        isInitialized: true,
       });
-    } catch (error) {
+    } catch {
       set({
         user: null,
         accessToken: null,
         isAuthenticated: false,
         loading: false,
+        isInitialized: true,
       });
+      clearSessionHint();
     }
   },
 
   setMustChangePassword: (value: boolean) => {
-    set({ mustChangePassword: value });
-    if (get().user) {
-      set({
-        user: {
-          ...get().user!,
-          must_change_password: value,
-        },
-      });
-    }
+    const user = get().user;
+    set({
+      mustChangePassword: value,
+      ...(user && { user: { ...user, must_change_password: value } }),
+    });
   },
 
   updateUser: (user: UserInfo) => {
@@ -204,5 +254,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   updateAccessToken: (accessToken: string) => {
     set({ accessToken });
+    scheduleTokenRefresh(accessToken);
   },
 }));

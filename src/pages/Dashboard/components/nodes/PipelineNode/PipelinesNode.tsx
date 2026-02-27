@@ -2,16 +2,92 @@ import { useThemeColors } from '@/hooks';
 import { useDashboardStore } from '@/store/dashboard';
 import { Handle, Position } from '@xyflow/react';
 import { motion } from 'motion/react';
-import { memo } from 'react';
-import { ANIMATION } from '../../../utils/constants';
+import { memo, useMemo } from 'react';
+import { ANIMATION, LAYOUT } from '../../../utils/constants';
+
+const normalizeSourceId = (id: string) => id.replace(/^source-/, '');
+const normalizeDestinationId = (id: string) => id.replace(/^dest-/, '');
+const normalizeRepositoryId = (id: string) => id.replace(/^repo-/, '');
 
 export const PipelinesNode = memo(() => {
   const { success, warning, critical, default: textDefault } = useThemeColors();
   const pipelines = useDashboardStore((state) => state.dashboardValues?.pipelines ?? 0);
+  const selectedNode = useDashboardStore((state) => state.selectedNode);
+  const structure = useDashboardStore((state) => state.dashboardStructure);
   const setTablePiplinesOpen = useDashboardStore((state) => state.setTablePiplinesOpen);
   const pipelineStatistics = useDashboardStore(
     (state) => state.dashboardData?.pipelines_stats ?? [],
   );
+  const displayedPipelines = useMemo(() => {
+    if (!selectedNode) {
+      return pipelines;
+    }
+
+    if (selectedNode.type === 'source') {
+      const selectedSourceId = normalizeSourceId(selectedNode.id);
+      return pipelineStatistics.filter((pipeline) =>
+        pipeline.source_topics.some(
+          (sourceId) => normalizeSourceId(sourceId) === selectedSourceId,
+        ),
+      ).length;
+    }
+
+    if (selectedNode.type === 'destination') {
+      const selectedDestinationId = normalizeDestinationId(selectedNode.id);
+      return pipelineStatistics.filter(
+        (pipeline) => normalizeDestinationId(pipeline.destination_topic) === selectedDestinationId,
+      ).length;
+    }
+
+    if (selectedNode.type === 'repository') {
+      const selectedRepositoryId = normalizeRepositoryId(selectedNode.id);
+      return pipelineStatistics.filter((pipeline) =>
+        (pipeline.repository_ids ?? []).some(
+          (repoId) => normalizeRepositoryId(repoId) === selectedRepositoryId,
+        ),
+      ).length;
+    }
+
+    if (selectedNode.type === 'sourceMore' && structure) {
+      const hiddenSourceIds = new Set(
+        structure.sourceTopics
+          .slice(LAYOUT.maxVisibleTopics)
+          .map((topic) => normalizeSourceId(topic.id)),
+      );
+
+      return pipelineStatistics.filter((pipeline) =>
+        pipeline.source_topics.some((sourceId) => hiddenSourceIds.has(normalizeSourceId(sourceId))),
+      ).length;
+    }
+
+    if (selectedNode.type === 'destMore' && structure) {
+      const hiddenDestinationIds = new Set(
+        structure.destinationTopics
+          .slice(LAYOUT.maxVisibleTopics)
+          .map((topic) => normalizeDestinationId(topic.id)),
+      );
+
+      return pipelineStatistics.filter((pipeline) =>
+        hiddenDestinationIds.has(normalizeDestinationId(pipeline.destination_topic)),
+      ).length;
+    }
+
+    if (selectedNode.type === 'repoMore' && structure) {
+      const hiddenRepositoryIds = new Set(
+        structure.repositories
+          .slice(LAYOUT.maxVisibleTopics)
+          .map((repo) => normalizeRepositoryId(repo.id)),
+      );
+
+      return pipelineStatistics.filter((pipeline) =>
+        (pipeline.repository_ids ?? []).some((repoId) =>
+          hiddenRepositoryIds.has(normalizeRepositoryId(repoId)),
+        ),
+      ).length;
+    }
+
+    return pipelines;
+  }, [selectedNode, pipelines, pipelineStatistics, structure]);
   const successCount = pipelineStatistics.filter(
     (pipeline) => pipeline.status_details?.level === 'info',
   ).length;
@@ -138,7 +214,7 @@ export const PipelinesNode = memo(() => {
         <div className="relative z-10 text-center">
           <motion.div
             className="text-4xl font-bold"
-            key={pipelines}
+            key={displayedPipelines}
             initial={{ scale: 1.15, opacity: 0.6 }}
             animate={{
               scale: 1,
@@ -148,7 +224,7 @@ export const PipelinesNode = memo(() => {
             transition={{ duration: 0.4, ease: 'easeOut' }}
           >
             <div className="flex items-center justify-center gap-2">
-              <span className="text-[38px] font-bold">{pipelines}</span>
+              <span className="text-[38px] font-bold">{displayedPipelines}</span>
               <span className="flex flex-col gap-1">
                 <span className="flex items-center gap-1">
                   <span className="bg-warning h-1.5 w-1.5 rounded-full"></span>

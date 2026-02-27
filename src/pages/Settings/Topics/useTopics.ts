@@ -9,7 +9,7 @@ export const useTopics = () => {
   const loading = useTopicsStore((state) => state.loading);
   const topics = useTopicsStore((state) => state.topics);
   const fetchTopics = useTopicsStore((state) => state.fetchTopics);
-  const { page, limit, setPage } = usePagination();
+  const { page, limit, setPage, setLimit } = usePagination();
   const { search, debouncedSearch, setSearch } = useSearch();
 
   const topicsData = useMemo(() => {
@@ -63,6 +63,7 @@ export const useTopics = () => {
     search,
     handleSyncTopics,
     setPage,
+    setLimit,
     setSearch,
   };
 };

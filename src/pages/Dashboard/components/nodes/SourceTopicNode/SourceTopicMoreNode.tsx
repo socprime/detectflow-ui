@@ -60,7 +60,7 @@ export const SourceTopicMoreNode = ({ data, id }: SourceTopicMoreNodeProps) => {
       }}
     >
       <Handle className="bg-light-blue opacity-0" type="source" position={Position.Right} />
-      <div className="relative z-10 text-xs italic opacity-70" style={{ color: textDefault }}>
+      <div className="relative z-10 text-xs italic" style={{ color: textDefault }}>
         {`+ ${hiddenCount} more`}
       </div>
     </motion.div>

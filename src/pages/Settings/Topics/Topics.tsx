@@ -12,13 +12,15 @@ export const Topics: React.FC = memo(() => {
     loading,
     table,
     columns,
-    handleSyncTopics,
     page,
+    limit,
     topicsData,
     totalPages,
     search,
     setPage,
+    setLimit,
     setSearch,
+    handleSyncTopics,
   } = useTopics();
 
   return (
@@ -47,7 +49,13 @@ export const Topics: React.FC = memo(() => {
         </>
       </PageHeader>
       <TableWrap table={table} columns={columns} loading={loading} data={topicsData} />
-      <PaginationWrap page={page} totalPages={totalPages} onPageChange={setPage} />
+      <PaginationWrap
+        page={page}
+        totalPages={totalPages}
+        limit={limit}
+        setLimit={setLimit}
+        onPageChange={setPage}
+      />
     </section>
   );
 });

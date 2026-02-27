@@ -134,6 +134,7 @@ export const UploadRulesDialog: React.FC<UploadRulesDialogProps> = ({
                 value={archivePassword}
                 onChange={(e) => handleArchivePasswordChange(e.target.value)}
                 disabled={isLoading || isArchiveProcessing}
+                autoComplete="off"
               />
               {archivePasswordError && (
                 <HelperText className="text-2xs text-critical">{archivePasswordError}</HelperText>

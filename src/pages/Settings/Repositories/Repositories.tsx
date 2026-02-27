@@ -12,6 +12,7 @@ import { CreateRepository, UploadRulesDialog } from './Dialogs';
 import { RepositoriesAside } from './RepositoriesAside';
 import { RepositoriesEmptyState } from './RepositoriesEmptyState';
 import { RepositorySettingsDropdown } from './RepositorySettingsDropdown';
+import { SyncProcessBar } from './SyncProcessBar';
 import { useRepositoriesTable } from './useRepositories';
 
 export const Repositories: React.FC = () => {
@@ -25,9 +26,12 @@ export const Repositories: React.FC = () => {
     repositoryId,
     isUploadDialogOpen,
     isCreateRepoDialogOpen,
+    syncProcessing,
     search,
+    limit,
     setSearch,
     setPage,
+    setLimit,
     handleOpenUploadDialog,
     handleCloseUploadDialog,
     handleCloseCreateRepositoryDialog,
@@ -86,6 +90,7 @@ export const Repositories: React.FC = () => {
             <RepositorySettingsDropdown loading={loading} />
           </>
         </PageHeader>
+        {syncProcessing && <SyncProcessBar />}
         <TableWrap
           table={table}
           columns={columns}
@@ -99,7 +104,13 @@ export const Repositories: React.FC = () => {
             />
           }
         />
-        <PaginationWrap page={page} totalPages={totalPages} onPageChange={setPage} />
+        <PaginationWrap
+          page={page}
+          totalPages={totalPages}
+          limit={limit}
+          setLimit={setLimit}
+          onPageChange={setPage}
+        />
       </div>
       {isUploadDialogOpen && (
         <UploadRulesDialog

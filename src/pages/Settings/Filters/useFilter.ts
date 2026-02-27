@@ -8,7 +8,7 @@ import { columns } from './columns';
 export const useFilters = () => {
   const { loading, filters, fetchFilters } = useFiltersStore();
   const { search, debouncedSearch, setSearch } = useSearch();
-  const { page, limit, setPage } = usePagination();
+  const { page, limit, setPage, setLimit } = usePagination();
   const { sorting, handleSortingChange } = useSorting({ setPage });
 
   const totalPages = useMemo(() => {
@@ -46,5 +46,6 @@ export const useFilters = () => {
     columns,
     setSearch,
     setPage,
+    setLimit,
   };
 };

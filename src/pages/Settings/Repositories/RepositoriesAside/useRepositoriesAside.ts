@@ -1,3 +1,4 @@
+import { ApiError } from '@/models/providers/ApiError';
 import { RepositoriesData } from '@/models/providers/Types/Response';
 import { routes } from '@/models/router';
 import { useRepositoriesStore } from '@/store/repositories';
@@ -11,7 +12,6 @@ const SYNC_POLLING_INTERVAL = 3000;
 const localState = {
   isCreateRepoDialogOpen: false,
   isAPISettingsDialogOpen: false,
-  syncStatusLoading: false,
   isAsideOpen: true,
 };
 
@@ -31,9 +31,12 @@ export const useRepositoriesAside = () => {
     repositories,
     repositorySettings,
     activeRepositoryId,
+    syncProcessing,
+    setSyncStatus,
     fetchRepositories,
     fetchRepositorySettings,
     fetchSyncStatus,
+    syncRepositories,
   } = useRepositoriesStore();
   const repositoryId = urlRepositoryId || activeRepositoryId || 'all';
   const [state, setState] = useState(localState);
@@ -57,10 +60,10 @@ export const useRepositoriesAside = () => {
       const syncStatus = await fetchSyncStatus();
 
       if (syncStatus.status === 'running') {
-        setState((prev) => ({ ...prev, syncStatusLoading: true }));
+        setSyncStatus(true);
       } else {
         stopPolling();
-        setState((prev) => ({ ...prev, syncStatusLoading: false }));
+        setSyncStatus(false);
         await refreshAllData();
 
         if (syncStatus.status === 'completed') {
@@ -71,7 +74,7 @@ export const useRepositoriesAside = () => {
       }
     } catch (error) {
       stopPolling();
-      setState((prev) => ({ ...prev, syncStatusLoading: false }));
+      setSyncStatus(false);
       toast.error('Failed to fetch sync status');
       console.error('Failed to fetch sync status:', error);
     }
@@ -86,7 +89,7 @@ export const useRepositoriesAside = () => {
     try {
       const syncStatus = await fetchSyncStatus();
       if (syncStatus.status === 'running') {
-        setState((prev) => ({ ...prev, syncStatusLoading: true }));
+        setSyncStatus(true);
         toast.info('Synchronization is running');
         startPolling();
       } else {
@@ -110,9 +113,11 @@ export const useRepositoriesAside = () => {
       try {
         const syncStatus = await fetchSyncStatus();
         if (syncStatus.status === 'running') {
-          setState((prev) => ({ ...prev, syncStatusLoading: true }));
+          setSyncStatus(true);
           toast.info('Synchronization is running');
           startPolling();
+        } else {
+          setSyncStatus(false);
         }
       } catch (error) {
         console.error('Failed to check initial sync status:', error);
@@ -142,24 +147,19 @@ export const useRepositoriesAside = () => {
 
   const handleRefreshRepositories = async () => {
     try {
-      setState((prev) => ({ ...prev, syncStatusLoading: true }));
-      const syncStatus = await fetchSyncStatus();
-
-      if (syncStatus.status === 'running') {
-        toast.info('Synchronization is running');
-        startPolling();
-      } else {
-        setState((prev) => ({ ...prev, syncStatusLoading: false }));
-        await refreshAllData();
-
-        if (syncStatus.status === 'completed') {
-          toast.success('Synchronization finished');
-        } else if (syncStatus.status === 'failed') {
-          toast.error('Synchronization failed');
-        }
-      }
+      await syncRepositories();
+      setSyncStatus(true);
+      toast.info('Synchronization is running');
+      startPolling();
     } catch (error) {
-      setState((prev) => ({ ...prev, syncStatusLoading: false }));
+      if (error instanceof ApiError && error.status === 409) {
+        setSyncStatus(true);
+        toast.info('Synchronization is already running');
+        startPolling();
+        return;
+      }
+      setSyncStatus(false);
+      toast.error(error instanceof Error ? error.message : 'Failed to refresh repositories');
       console.error('Failed to refresh repositories:', error);
     }
   };
@@ -180,6 +180,7 @@ export const useRepositoriesAside = () => {
     repositoriesList,
     repositoryId,
     rulesTotal,
+    syncProcessing,
     handleRepositoryLink,
     handleToggleAside,
     handleCloseAPISettingsDialog,

@@ -85,6 +85,48 @@ export const useNodeSelection = () => {
     [pipelines, structure],
   );
 
+  const getSourcesForSources = useCallback(
+    (sourceIds: string[]) => {
+      const sourceSet = new Set(sourceIds.map(normalizeSourceId));
+      const sources = new Set<string>();
+
+      pipelines.forEach((pipeline) => {
+        if (pipeline.source_topics.some((sourceId) => sourceSet.has(normalizeSourceId(sourceId)))) {
+          pipeline.source_topics.forEach((sourceId) => {
+            sources.add(`source-${normalizeSourceId(sourceId)}`);
+          });
+        }
+      });
+
+      if (!structure) return Array.from(sources);
+
+      const visibleSourceIds = new Set(
+        structure.sourceTopics.slice(0, LAYOUT.maxVisibleTopics).map((t) => `source-${t.id}`),
+      );
+      const hiddenSourceIds = structure.sourceTopics
+        .slice(LAYOUT.maxVisibleTopics)
+        .map((t) => `source-${t.id}`);
+
+      const result = new Set<string>();
+      let hasHiddenSources = false;
+
+      sources.forEach((sourceId) => {
+        if (visibleSourceIds.has(sourceId)) {
+          result.add(sourceId);
+        } else if (hiddenSourceIds.includes(sourceId)) {
+          hasHiddenSources = true;
+        }
+      });
+
+      if (hasHiddenSources) {
+        result.add('source-more');
+      }
+
+      return Array.from(result);
+    },
+    [pipelines, structure],
+  );
+
   const getSourcesForDestinations = useCallback(
     (destinationIds: string[]) => {
       const destSet = new Set(destinationIds.map(normalizeDestinationId));
@@ -303,14 +345,16 @@ export const useNodeSelection = () => {
         clearNodeSelection();
       } else {
         const sourceRawId = sourceId.replace('source-', '');
+        const sources = getSourcesForSources([sourceRawId]);
         const destinations = getDestinationsForSources([sourceRawId]);
         const repos = getRepositoriesForSources([sourceRawId]);
-        setNodeSelection({ id: sourceId, type: 'source' }, [sourceId], destinations, repos);
+        setNodeSelection({ id: sourceId, type: 'source' }, sources, destinations, repos);
       }
     },
     [
       selectedNode,
       structure,
+      getSourcesForSources,
       getDestinationsForSources,
       getRepositoriesForSources,
       setNodeSelection,

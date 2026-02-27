@@ -108,10 +108,6 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface RefreshTokenRequest {
-  refresh_token: string;
-}
-
 export interface UpdateProfileRequest {
   full_name: string;
 }

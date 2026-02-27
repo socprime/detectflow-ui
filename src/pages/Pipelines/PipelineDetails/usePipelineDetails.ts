@@ -28,7 +28,7 @@ export const usePipelineDetails = () => {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isRuleDialogOpen, setIsRuleDialogOpen] = useState(!!ruleIdFromUrl);
   const { search, debouncedSearch, setSearch } = useSearch();
-  const { page, limit, setPage } = usePagination();
+  const { page, limit, setPage, setLimit } = usePagination();
   const { sorting, handleSortingChange } = useSorting({ setPage });
   const taggedFilterFromUrl = searchParams.get('tagged_filter');
   const [hideUnmatchedRules, setHideUnmatchedRules] = useState(taggedFilterFromUrl === 'tagged');
@@ -54,9 +54,11 @@ export const usePipelineDetails = () => {
 
   const params: PaginationParams = useMemo(() => {
     const { sort, order } = convertSortingToApiParams(sorting);
+    const offset = (page - 1) * limit;
+
     return {
       page,
-      offset: (page - 1) * limit,
+      offset,
       limit,
       search: debouncedSearch || undefined,
       tagged_filter: hideUnmatchedRules ? 'tagged' : undefined,
@@ -158,19 +160,21 @@ export const usePipelineDetails = () => {
   return {
     loading,
     isRuleDialogOpen,
-    pipeline,
-    table,
-    page,
     rules,
-    totalPages,
-    search,
+    pipeline,
     selectedRules: selectedRuleIds,
     rowSelection,
     columns,
+    table,
+    page,
+    limit,
+    totalPages,
+    search,
     hideUnmatchedRules,
     setHideUnmatchedRules: handleTaggedFilterChange,
     setPage,
     setSearch,
+    setLimit,
     handleCloseRuleDialog,
     handleActivateRules,
   };

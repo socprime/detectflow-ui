@@ -74,7 +74,7 @@ export const useRuleEdit = () => {
     } catch (error) {
       const message =
         error instanceof ApiError
-          ? error.data?.detail || error.data?.message || error.data?.error || error.message
+          ? error.message
           : 'Failed to save rule';
       toast.error(message);
       console.error('Failed to save rule:', error);

@@ -59,7 +59,7 @@ export const DestinationTopicMoreNode = ({ data, id }: DestinationTopicMoreNodeP
       }}
     >
       <Handle className="bg-purple opacity-0" type="target" position={Position.Left} />
-      <div className="relative z-10 text-sm italic opacity-70" style={{ color: textDefault }}>
+      <div className="relative z-10 text-sm italic" style={{ color: textDefault }}>
         {`+ ${hiddenCount} more`}
       </div>
     </motion.div>

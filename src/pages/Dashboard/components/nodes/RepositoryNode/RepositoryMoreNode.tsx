@@ -56,7 +56,7 @@ export const RepositoryMoreNode = ({ data, id }: RepositoryMoreNodeProps) => {
       transition={{ duration: ANIMATION.nodeAnimationDuration }}
     >
       <Handle className="bg-success opacity-0" type="source" position={Position.Right} />
-      <div className="relative z-10 text-sm italic opacity-70" style={{ color: textDefault }}>
+      <div className="relative z-10 text-sm italic" style={{ color: textDefault }}>
         {`+ ${hiddenCount} more`}
       </div>
     </motion.div>

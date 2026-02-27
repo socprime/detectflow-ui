@@ -12,7 +12,7 @@ export const usePipelines = () => {
   const pipelines = usePipelinesStore((state) => state.pipelines);
   const [switchLoading, setSwitchLoading] = useState(false);
   const { search, debouncedSearch, setSearch } = useSearch();
-  const { page, limit, setPage } = usePagination();
+  const { page, limit, setPage, setLimit } = usePagination();
   const { sorting, handleSortingChange } = useSorting({ setPage });
 
   const pipelinesData = useMemo(() => pipelines?.data || [], [pipelines]);
@@ -21,9 +21,11 @@ export const usePipelines = () => {
 
   const buildFetchParams = useCallback(() => {
     const { sort, order } = convertSortingToApiParams(sorting);
+    const offset = (page - 1) * limit;
+    
     return {
       page,
-      offset: (page - 1) * limit,
+      offset,
       limit,
       search: debouncedSearch || undefined,
       sort: sort || 'created',
@@ -84,9 +86,11 @@ export const usePipelines = () => {
     data: pipelinesData,
     search,
     page,
+    limit,
     columns,
     totalPages,
     setPage,
     setSearch,
+    setLimit,
   };
 };

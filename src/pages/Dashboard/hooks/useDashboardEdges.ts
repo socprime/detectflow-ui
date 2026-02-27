@@ -9,10 +9,16 @@ const MAX_WIDTH = 10;
 const EMPTY_PIPELINES: never[] = [];
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+const safeMetric = (value: unknown) => {
+  const num = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(num) && num >= 0 ? num : 0;
+};
 
 const scaleWidth = (value: number, maxValue: number) => {
-  if (maxValue <= 0) return MIN_WIDTH;
-  const scaled = MIN_WIDTH + (value / maxValue) * (MAX_WIDTH - MIN_WIDTH);
+  const safeValue = safeMetric(value);
+  const safeMax = safeMetric(maxValue);
+  if (safeMax <= 0) return MIN_WIDTH;
+  const scaled = MIN_WIDTH + (safeValue / safeMax) * (MAX_WIDTH - MIN_WIDTH);
   return clamp(Math.round(scaled), MIN_WIDTH, MAX_WIDTH);
 };
 
@@ -45,13 +51,13 @@ export const useDashboardEdges = () => {
   const structureKey = useMemo(() => {
     if (!structure) return '';
     return `${structure.sourceTopics
-      .map((t) => `${t.id}:${t.eps}`)
+      .map((t) => `${t.id}:${safeMetric(t.eps)}`)
       .sort()
       .join(',')}_${structure.repositories
-      .map((r) => `${r.id}:${r.rulesCount}`)
+      .map((r) => `${r.id}:${safeMetric(r.rulesCount)}`)
       .sort()
       .join(',')}_${structure.destinationTopics
-      .map((t) => `${t.id}:${t.taggedEps + t.untaggedEps}`)
+      .map((t) => `${t.id}:${safeMetric(t.taggedEps) + safeMetric(t.untaggedEps)}`)
       .sort()
       .join(',')}`;
   }, [structure]);
@@ -104,13 +110,13 @@ export const useDashboardEdges = () => {
       });
     };
 
-    const sourceValues = structure.sourceTopics.map((t) => t.eps);
+    const sourceValues = structure.sourceTopics.map((t) => safeMetric(t.eps));
     const maxSourceValue = Math.max(0, ...sourceValues);
     let sourceAggWidth = 0;
     const visibleSources = structure.sourceTopics.slice(0, LAYOUT.maxVisibleTopics);
 
     visibleSources.forEach((t, i) => {
-      const w = scaleWidth(t.eps, maxSourceValue);
+      const w = scaleWidth(safeMetric(t.eps), maxSourceValue);
       sourceAggWidth += w;
       add(
         `e-source-${t.id}`,
@@ -127,7 +133,7 @@ export const useDashboardEdges = () => {
     if (structure.sourceTopics.length > LAYOUT.maxVisibleTopics) {
       const collapsedValue = structure.sourceTopics
         .slice(LAYOUT.maxVisibleTopics)
-        .reduce((sum, t) => sum + t.eps, 0);
+        .reduce((sum, t) => sum + safeMetric(t.eps), 0);
       const collapsedW = scaleWidth(collapsedValue, maxSourceValue);
       sourceAggWidth += collapsedW;
       add(
@@ -152,13 +158,13 @@ export const useDashboardEdges = () => {
       500,
     );
 
-    const repoValues = structure.repositories.map((r) => r.rulesCount);
+    const repoValues = structure.repositories.map((r) => safeMetric(r.rulesCount));
     const maxRepoValue = Math.max(0, ...repoValues);
     let repoAggWidth = 0;
     const visibleRepos = structure.repositories.slice(0, LAYOUT.maxVisibleTopics);
 
     visibleRepos.forEach((r, i) => {
-      const w = scaleWidth(r.rulesCount, maxRepoValue);
+      const w = scaleWidth(safeMetric(r.rulesCount), maxRepoValue);
       repoAggWidth += w;
       add(
         `e-repo-${r.id}`,
@@ -175,7 +181,7 @@ export const useDashboardEdges = () => {
     if (structure.repositories.length > LAYOUT.maxVisibleTopics) {
       const collapsedValue = structure.repositories
         .slice(LAYOUT.maxVisibleTopics)
-        .reduce((sum, r) => sum + r.rulesCount, 0);
+        .reduce((sum, r) => sum + safeMetric(r.rulesCount), 0);
       const collapsedW = scaleWidth(collapsedValue, maxRepoValue);
       repoAggWidth += collapsedW;
       add(
@@ -200,15 +206,17 @@ export const useDashboardEdges = () => {
       1000,
     );
 
-    const destValues = structure.destinationTopics.map((t) => t.taggedEps + t.untaggedEps);
+    const destValues = structure.destinationTopics.map(
+      (t) => safeMetric(t.taggedEps) + safeMetric(t.untaggedEps),
+    );
     const maxDestValue = Math.max(0, ...destValues);
     const visibleDests = structure.destinationTopics.slice(0, LAYOUT.maxVisibleTopics);
     const destWidths = visibleDests.map((t) =>
-      scaleWidth(t.taggedEps + t.untaggedEps, maxDestValue),
+      scaleWidth(safeMetric(t.taggedEps) + safeMetric(t.untaggedEps), maxDestValue),
     );
     const collapsedDestValue = structure.destinationTopics
       .slice(LAYOUT.maxVisibleTopics)
-      .reduce((sum, t) => sum + t.taggedEps + t.untaggedEps, 0);
+      .reduce((sum, t) => sum + safeMetric(t.taggedEps) + safeMetric(t.untaggedEps), 0);
     const collapsedDestWidth =
       structure.destinationTopics.length > LAYOUT.maxVisibleTopics
         ? scaleWidth(collapsedDestValue, maxDestValue)

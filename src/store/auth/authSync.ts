@@ -1,5 +1,5 @@
 import type { UserInfo } from '@/models/providers/Types/Response';
-import { useAuthStore } from './auth';
+import { resetAuthState, scheduleTokenRefresh, useAuthStore } from './auth';
 
 const CHANNEL_NAME = 'auth_channel';
 let broadcastChannel: BroadcastChannel | null = null;
@@ -14,7 +14,17 @@ interface LogoutMessage {
   type: 'LOGOUT';
 }
 
-type AuthMessage = LoginMessage | LogoutMessage;
+interface AuthStateRequestMessage {
+  type: 'AUTH_STATE_REQUEST';
+}
+
+interface SyncResponseMessage {
+  type: 'SYNC_RESPONSE';
+  user: UserInfo;
+  accessToken: string;
+}
+
+type AuthMessage = LoginMessage | LogoutMessage | AuthStateRequestMessage | SyncResponseMessage;
 
 export const setupAuthSync = () => {
   if (typeof BroadcastChannel === 'undefined') {
@@ -29,20 +39,55 @@ export const setupAuthSync = () => {
       const { data } = event;
 
       if (data.type === 'LOGOUT') {
-        useAuthStore.getState().forceLogout();
+        resetAuthState();
       } else if (data.type === 'LOGIN') {
         useAuthStore.setState({
           user: data.user,
           accessToken: data.accessToken,
           isAuthenticated: true,
           loading: false,
+          isInitialized: true,
           error: null,
           mustChangePassword: data.user.must_change_password,
         });
+        scheduleTokenRefresh(data.accessToken);
+      } else if (data.type === 'AUTH_STATE_REQUEST') {
+        const { isAuthenticated, user, accessToken } = useAuthStore.getState();
+        if (isAuthenticated && user && accessToken) {
+          broadcastChannel?.postMessage({
+            type: 'SYNC_RESPONSE',
+            user,
+            accessToken,
+          } satisfies SyncResponseMessage);
+        }
+      } else if (data.type === 'SYNC_RESPONSE') {
+        if (!useAuthStore.getState().isAuthenticated) {
+          useAuthStore.setState({
+            user: data.user,
+            accessToken: data.accessToken,
+            isAuthenticated: true,
+            loading: false,
+            isInitialized: true,
+            error: null,
+            mustChangePassword: data.user.must_change_password,
+          });
+          scheduleTokenRefresh(data.accessToken);
+        }
       }
     };
+
+    broadcastChannel.postMessage({
+      type: 'AUTH_STATE_REQUEST',
+    } satisfies AuthStateRequestMessage);
   } catch (error) {
     console.error('Failed to setup auth sync:', error);
+  }
+};
+
+export const teardownAuthSync = () => {
+  if (broadcastChannel) {
+    broadcastChannel.close();
+    broadcastChannel = null;
   }
 };
 
@@ -71,6 +116,5 @@ export const broadcastLogin = (user: UserInfo, accessToken: string) => {
 };
 
 export const initializeAuth = () => {
-  useAuthStore.getState().initialize();
   setupAuthSync();
 };

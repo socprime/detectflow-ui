@@ -3,7 +3,7 @@ import { RouterProvider } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toaster } from './components/Toast';
 import { router } from './models/router/router';
-import { initializeAuth } from './store/authSync';
+import { initializeAuth } from './store';
 
 import './index.scss';
 

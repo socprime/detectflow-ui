@@ -68,7 +68,7 @@ export const createColumns = ({
   },
   {
     header: 'Log Source',
-    accessorKey: 'log_source_name',
+    accessorKey: 'log_source',
     cell: ({ row }) => (
       <span className="flex flex-col">
         <span className="text-default text-xs">
@@ -82,14 +82,14 @@ export const createColumns = ({
   },
   {
     header: 'Filters',
-    accessorKey: 'Filters',
+    accessorKey: 'filters',
     cell: ({ row }) => (
       <span className="text-xs whitespace-nowrap">{row.original.filters || '-'}</span>
     ),
   },
   {
     header: 'Rules',
-    accessorKey: 'Rules',
+    accessorKey: 'rules',
     cell: ({ row }) => (
       <span className="text-xs whitespace-nowrap">{row.original.rules || '-'}</span>
     ),
@@ -126,6 +126,15 @@ export const createColumns = ({
         >
           <Badge variant="critical">
             <span className="text-critical capitalize">{status}</span>
+          </Badge>
+        </Tooltip>
+      ) : severity === 'warning' ? (
+        <Tooltip
+          content={row.original.status_details?.warnings?.join(', ')}
+          className="max-w-[350px] break-all"
+        >
+          <Badge variant="warning">
+            <span className="text-warning capitalize">{status}</span>
           </Badge>
         </Tooltip>
       ) : (
