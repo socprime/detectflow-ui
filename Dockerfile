@@ -4,7 +4,7 @@ COPY . .
 
 RUN yarn install
 RUN yarn build && yarn cache clean
-RUN npm install -g npm@latest
 RUN env
+RUN rm -rf /usr/local/lib/node_modules/npm
 EXPOSE 4173
 CMD ["yarn", "prod"]
