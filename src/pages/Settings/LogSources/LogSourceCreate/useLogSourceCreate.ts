@@ -6,14 +6,14 @@ import {
   RunTransformTestResponse,
 } from '@/models/providers/Types/Response';
 import { routes } from '@/models/router';
-import { useRepositoriesStore } from '@/store';
+import { useMappingStore, useRepositoriesStore } from '@/store';
 import { useLogSourcesStore } from '@/store/logSources';
 import { useTopicsStore } from '@/store/topics';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { mergeMappings } from '../utils';
+import { mergeMappings } from './utils';
 
 export interface LogSourceFormData extends CreateLogSourceRequest {
   transform_test_result: string;
@@ -43,7 +43,6 @@ export interface LogSourceBoolState {
   isAIGenerateDialogOpen: boolean;
   isRunningTransformTest: boolean;
   isRunningDirectTest: boolean;
-  isRunningCreateDialog: boolean;
   isTopicEventsLoading: boolean;
   isTopicEventsShow: boolean;
 }
@@ -53,7 +52,6 @@ const initialBoolState: LogSourceBoolState = {
   isAIGenerateDialogOpen: false,
   isRunningTransformTest: false,
   isRunningDirectTest: false,
-  isRunningCreateDialog: false,
   isTopicEventsLoading: false,
   isTopicEventsShow: false,
 };
@@ -65,7 +63,6 @@ export const useLogSourceCreate = () => {
   const {
     loading,
     logSource,
-    fetchSigmaFields,
     fetchLogSourceById,
     runTransformTest,
     runPreviewParseTest,
@@ -73,6 +70,7 @@ export const useLogSourceCreate = () => {
     updateLogSource,
     deleteLogSource,
   } = useLogSourcesStore();
+  const { loadingSigmaFields, fetchSigmaFields } = useMappingStore();
   const { allTopics, topicEvents, fetchAllTopics, fetchTopicEvents } = useTopicsStore();
   const { repositories, fetchRepositories } = useRepositoriesStore();
   const [boolState, setBoolState] = useState(initialBoolState);
@@ -257,8 +255,6 @@ export const useLogSourceCreate = () => {
       return;
     }
 
-    setBoolState((prev) => ({ ...prev, isRunningCreateDialog: true }));
-
     try {
       const values = getValues();
       const repositoryMapping = await fetchSigmaFields({
@@ -275,8 +271,6 @@ export const useLogSourceCreate = () => {
     } catch (error) {
       toast.error('Failed to fetch repository fields');
       console.error('Failed to fetch repository fields:', error);
-    } finally {
-      setBoolState((prev) => ({ ...prev, isRunningCreateDialog: false }));
     }
   };
 
@@ -309,6 +303,7 @@ export const useLogSourceCreate = () => {
 
   return {
     loading,
+    loadingSigmaFields,
     errors,
     logSourceId,
     isDirty,

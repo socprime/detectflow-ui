@@ -1,24 +1,20 @@
-import { HelperText, Input, Label, Switch } from '@/components/Form';
+import { HelperText, Input, Label } from '@/components/Form';
 import { Tooltip } from '@/components/Tooltip';
 import { InfoIcon } from 'lucide-react';
-import { Controller, UseFormReturn } from 'react-hook-form';
+import { UseFormReturn } from 'react-hook-form';
 import { RuntimeTooltipLayout } from './RuntimeTooltipLayout';
 import { usePipelineRuntimeFormFields } from './usePipelineRuntimeFormFields';
 
 export interface PipelineRuntimeFormFieldsProps {
   isReadOnly?: boolean;
-  control: UseFormReturn<any>['control'];
   errors: UseFormReturn<any>['formState']['errors'];
   register: UseFormReturn<any>['register'];
-  watch: UseFormReturn<any>['watch'];
 }
 
 export const PipelineRuntimeFormFields: React.FC<PipelineRuntimeFormFieldsProps> = ({
   isReadOnly = false,
-  control,
   errors,
   register,
-  watch,
 }: PipelineRuntimeFormFieldsProps) => {
   const { loading, parameters } = usePipelineRuntimeFormFields();
   const defaultTooltipText =
@@ -176,102 +172,8 @@ export const PipelineRuntimeFormFields: React.FC<PipelineRuntimeFormFieldsProps>
             </HelperText>
           )}
         </div>
-        <div className="flex basis-1/2 flex-col">
-          <div className="flex items-center gap-3">
-            <Controller
-              name="autoscaler_enabled"
-              control={control}
-              render={({ field }) => (
-                <Switch
-                  disabled={loading || isReadOnly}
-                  id="autoscaler_enabled"
-                  name="autoscaler_enabled"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  tooltip={isReadOnly ? defaultTooltipText : undefined}
-                />
-              )}
-            />
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="autoscaler_enabled" className="text-silver text-xs">
-                Enable Autoscaling
-                <Tooltip
-                  className="max-w-[350px]"
-                  content={<RuntimeTooltipLayout {...parameters.autoscalerEnabled!} />}
-                >
-                  <InfoIcon className="text-gray-chateau size-4" />
-                </Tooltip>
-              </Label>
-              <HelperText className="text-gray-chateau line-height-1 text-2xs">
-                Automatically adjust parallelism based on workload. Scales up during traffic spikes
-                and down during quiet periods.
-              </HelperText>
-            </div>
-          </div>
-        </div>
+        <div className="flex basis-1/2" />
       </div>
-      {watch('autoscaler_enabled') && (
-        <div className="flex gap-4">
-          <div className="flex basis-1/2 flex-col gap-2">
-            <Label htmlFor="autoscaler_min_parallelism" className="text-silver text-xs">
-              Min Parallelism
-              <Tooltip
-                className="max-w-[350px]"
-                content={<RuntimeTooltipLayout {...parameters.autoscalerMinParallelism!} />}
-              >
-                <InfoIcon className="text-gray-chateau size-4" />
-              </Tooltip>
-            </Label>
-            <Input
-              id="autoscaler_min_parallelism"
-              placeholder="Enter Min Parallelism"
-              className="bg-primary"
-              loading={loading}
-              aria-invalid={!!errors.autoscaler_min_parallelism}
-              disabled={isReadOnly}
-              tooltip={isReadOnly ? defaultTooltipText : undefined}
-              {...register('autoscaler_min_parallelism', {
-                required: 'Please, enter the Min Parallelism',
-                valueAsNumber: true,
-              })}
-            />
-            {errors.autoscaler_min_parallelism && (
-              <HelperText className="text-critical text-2xs">
-                {errors.autoscaler_min_parallelism.message as string}
-              </HelperText>
-            )}
-          </div>
-          <div className="flex basis-1/2 flex-col gap-2">
-            <Label htmlFor="autoscaler_max_parallelism" className="text-silver text-xs">
-              Max Parallelism
-              <Tooltip
-                className="max-w-[350px]"
-                content={<RuntimeTooltipLayout {...parameters.autoscalerMaxParallelism!} />}
-              >
-                <InfoIcon className="text-gray-chateau size-4" />
-              </Tooltip>
-            </Label>
-            <Input
-              id="autoscaler_max_parallelism"
-              placeholder="Enter Max Parallelism"
-              className="bg-primary"
-              loading={loading}
-              aria-invalid={!!errors.autoscaler_max_parallelism}
-              disabled={isReadOnly}
-              tooltip={isReadOnly ? defaultTooltipText : undefined}
-              {...register('autoscaler_max_parallelism', {
-                required: 'Please, enter the Max Parallelism',
-                valueAsNumber: true,
-              })}
-            />
-            {errors.autoscaler_max_parallelism && (
-              <HelperText className="text-critical text-2xs">
-                {errors.autoscaler_max_parallelism.message as string}
-              </HelperText>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

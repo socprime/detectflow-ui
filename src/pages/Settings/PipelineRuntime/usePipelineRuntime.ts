@@ -24,14 +24,9 @@ export const usePipelineRuntime = () => {
     taskmanager_cpu: pipelineRuntime?.taskmanager_cpu || 0,
     window_size_sec: pipelineRuntime?.window_size_sec || 0,
     checkpoint_interval_sec: pipelineRuntime?.checkpoint_interval_sec || 0,
-    autoscaler_enabled: pipelineRuntime?.autoscaler_enabled || false,
-    autoscaler_min_parallelism: pipelineRuntime?.autoscaler_min_parallelism || 0,
-    autoscaler_max_parallelism: pipelineRuntime?.autoscaler_max_parallelism || 0,
   };
 
   const {
-    control,
-    watch,
     register,
     handleSubmit,
     formState: { errors, isDirty, isValid },
@@ -44,8 +39,16 @@ export const usePipelineRuntime = () => {
       return;
     }
 
+    const params = {
+      parallelism: data.parallelism,
+      taskmanager_memory_mb: data.taskmanager_memory_mb,
+      taskmanager_cpu: data.taskmanager_cpu,
+      window_size_sec: data.window_size_sec,
+      checkpoint_interval_sec: data.checkpoint_interval_sec,
+    };
+
     try {
-      await updatePipelineRuntime(data);
+      await updatePipelineRuntime(params);
       toast.success('Pipeline runtime settings saved successfully!');
     } catch (error) {
       toast.error('Failed to update pipeline runtime');
@@ -57,10 +60,8 @@ export const usePipelineRuntime = () => {
     loading,
     isDirty,
     isValid,
-    control,
     errors,
     isAdmin,
-    watch,
     register,
     handleSubmit,
     handleFormSubmit,

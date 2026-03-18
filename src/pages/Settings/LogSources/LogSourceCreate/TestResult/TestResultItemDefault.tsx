@@ -1,7 +1,7 @@
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/Accordion';
 import { TextTruncate } from '@/components/TextTruncate';
 import { RunTransformTestResult } from '@/models/providers';
-import { formatValue } from '../utils';
+import { parseData } from '../utils';
 
 interface TestResultItemDefaultProps {
   item: RunTransformTestResult;
@@ -30,7 +30,7 @@ export const TestResultItemDefault = ({
           showCopy={item.success}
           showToggle={item.success}
         >
-          {JSON.stringify(JSON.parse(item?.source_data), null, 2)}
+          {parseData(item.source_data)}
         </TextTruncate>
       </AccordionTrigger>
       {!onlyRead && (
@@ -39,7 +39,9 @@ export const TestResultItemDefault = ({
             {Object.entries(item?.parsed_data || {})?.map(([key, value]) => (
               <div key={key} className="flex gap-2 break-words">
                 <span className="text-gray-chateau text-2xs min-w-25 font-medium">{key}:</span>
-                <span className="text-subdued text-2xs break-all">{formatValue(value)}</span>
+                <span className="text-subdued text-2xs break-all">
+                  {parseData(value as string)}
+                </span>
               </div>
             ))}
           </div>

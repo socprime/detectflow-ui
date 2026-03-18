@@ -1,13 +1,14 @@
 import { useThemeStore } from '@/store/theme';
 import { Toaster as Sonner, ToasterProps } from 'sonner';
 
-const Toaster = ({ ...props }: ToasterProps) => {
+export const Toaster: React.FC<ToasterProps> = ({ ...props }) => {
   const theme = useThemeStore((s) => s.theme);
 
   return (
     <Sonner
       theme={theme as ToasterProps['theme']}
       className="toaster group"
+      expand
       style={
         {
           '--normal-bg': 'var(--bg-secondary)',
@@ -19,5 +20,3 @@ const Toaster = ({ ...props }: ToasterProps) => {
     />
   );
 };
-
-export { Toaster };

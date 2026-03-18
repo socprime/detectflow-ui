@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ANIMATION, LAYOUT } from '../../../utils/constants';
 
 import type { MoreNodeData } from '../../../types';
+import { TooltipShowMore } from '../../TooltipShowMore';
 
 interface SourceTopicMoreNodeProps {
   data: MoreNodeData;
@@ -26,7 +27,14 @@ export const SourceTopicMoreNode = ({ data, id }: SourceTopicMoreNodeProps) => {
     if (!structure) {
       return 0;
     }
-    return Math.max(0, structure.sourceTopics.length - LAYOUT.maxVisibleTopics);
+    return Math.max(0, structure.sourceTopics.length - LAYOUT.maxVisibleNodes);
+  }, [structure]);
+
+  const hiddenSources = useMemo(() => {
+    if (!structure) {
+      return [];
+    }
+    return structure.sourceTopics.slice(LAYOUT.maxVisibleNodes);
   }, [structure]);
 
   if (hiddenCount === 0) {
@@ -61,7 +69,7 @@ export const SourceTopicMoreNode = ({ data, id }: SourceTopicMoreNodeProps) => {
     >
       <Handle className="bg-light-blue opacity-0" type="source" position={Position.Right} />
       <div className="relative z-10 text-xs italic" style={{ color: textDefault }}>
-        {`+ ${hiddenCount} more`}
+        <TooltipShowMore data={hiddenSources} children={`+ ${hiddenCount} more`} />
       </div>
     </motion.div>
   );

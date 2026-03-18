@@ -5,6 +5,8 @@ import { useSearchParams } from 'react-router-dom';
 export interface UseSearchOptions {
   defaultSearch?: string;
   searchParamName?: string;
+  searchFieldsParamName?: string;
+  defaultSearchFields?: string[];
   debounceMs?: number;
   onSearchChange?: (search: string) => void;
   resetPageOnChange?: boolean;
@@ -15,6 +17,8 @@ export const useSearch = (options: UseSearchOptions = {}) => {
   const {
     defaultSearch = '',
     searchParamName = 'search',
+    searchFieldsParamName = 'search_fields',
+    defaultSearchFields = [],
     debounceMs = 500,
     onSearchChange,
     resetPageOnChange = true,
@@ -22,17 +26,33 @@ export const useSearch = (options: UseSearchOptions = {}) => {
   } = options;
 
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const defaultSearchFieldsKey = defaultSearchFields.join(',');
+  const stableDefaultSearchFields = useMemo(
+    () => defaultSearchFields,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [defaultSearchFieldsKey],
+  );
+
   const searchFromUrl = useMemo(
     () => getQueryParam(searchParams, searchParamName, defaultSearch),
     [searchParams, searchParamName, defaultSearch],
   );
 
+  const searchFieldsFromUrl = useMemo(() => {
+    const raw = searchParams.get(searchFieldsParamName);
+    return raw ? raw.split(',').filter(Boolean) : stableDefaultSearchFields;
+  }, [searchParams, searchFieldsParamName, stableDefaultSearchFields]);
+
   const [localSearch, setLocalSearch] = useState(searchFromUrl);
   const [debouncedSearch, setDebouncedSearch] = useState(searchFromUrl);
+  const [searchFields, setSearchFieldsState] = useState<string[]>(searchFieldsFromUrl);
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isUpdatingUrlRef = useRef(false);
   const onSearchChangeRef = useRef(onSearchChange);
+  const searchFieldsRef = useRef(searchFields);
+  searchFieldsRef.current = searchFields;
 
   useEffect(() => {
     onSearchChangeRef.current = onSearchChange;
@@ -54,20 +74,31 @@ export const useSearch = (options: UseSearchOptions = {}) => {
     };
   }, [localSearch, debounceMs]);
 
-  useEffect(() => {
-    if (debouncedSearch === searchFromUrl) {
-      return;
-    }
+  const searchFieldsKey = searchFields.join(',');
 
+  useEffect(() => {
     isUpdatingUrlRef.current = true;
 
     setSearchParams(
-      (prev) =>
-        updateQueryParams(
+      (prev) => {
+        const currentUrlSearch = prev.get(searchParamName) || '';
+        const currentUrlFields = prev.get(searchFieldsParamName) || '';
+        const fieldsValue = searchFieldsRef.current.join(',');
+
+        if (debouncedSearch === currentUrlSearch && fieldsValue === currentUrlFields) {
+          isUpdatingUrlRef.current = false;
+          return prev;
+        }
+
+        return updateQueryParams(
           prev,
-          { [searchParamName]: debouncedSearch || null },
+          {
+            [searchParamName]: debouncedSearch || null,
+            [searchFieldsParamName]: fieldsValue || null,
+          },
           resetPageOnChange ? { resetPage: true, pageParamName } : {},
-        ),
+        );
+      },
       { replace: true },
     );
 
@@ -82,13 +113,15 @@ export const useSearch = (options: UseSearchOptions = {}) => {
     return () => {
       clearTimeout(timeoutId);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     debouncedSearch,
+    searchFieldsKey,
     searchParamName,
+    searchFieldsParamName,
     pageParamName,
     resetPageOnChange,
     setSearchParams,
-    searchFromUrl,
   ]);
 
   useEffect(() => {
@@ -100,23 +133,34 @@ export const useSearch = (options: UseSearchOptions = {}) => {
       setLocalSearch(searchFromUrl);
       setDebouncedSearch(searchFromUrl);
     }
-  }, [searchFromUrl, localSearch, debouncedSearch]);
+
+    const urlFieldsKey = searchFieldsFromUrl.join(',');
+    if (urlFieldsKey !== searchFieldsRef.current.join(',')) {
+      setSearchFieldsState(searchFieldsFromUrl);
+    }
+  }, [searchFromUrl, localSearch, debouncedSearch, searchFieldsFromUrl]);
 
   const setSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('setSearch', e.target.value);
     setLocalSearch(e.target.value);
+  }, []);
+
+  const setSearchFields = useCallback((fields: string[] | null) => {
+    setSearchFieldsState(fields || []);
   }, []);
 
   const resetSearch = useCallback(() => {
     setLocalSearch(defaultSearch);
     setDebouncedSearch(defaultSearch);
-  }, [defaultSearch]);
+    setSearchFieldsState(stableDefaultSearchFields);
+  }, [defaultSearch, stableDefaultSearchFields]);
 
   return {
     search: localSearch,
     debouncedSearch,
+    searchFields,
     searchParams,
     setSearch,
+    setSearchFields,
     resetSearch,
     setSearchParams,
   };

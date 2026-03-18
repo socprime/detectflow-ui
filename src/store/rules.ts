@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { api } from '../models/providers';
 import type {
+  BulkCreateRulesRequest,
   CreateRuleRequest,
   RulesRequest,
   UpdateRuleRequest,
 } from '../models/providers/Types/Request';
 import type {
+  BulkCreateRulesResponse,
   RuleDetailsResponse,
   RulesResponse,
   StatusResponse,
@@ -21,6 +23,10 @@ interface RulesState {
   fetchRules: (params?: RulesRequest) => Promise<RulesResponse>;
   fetchRuleById: (ruleId: string) => Promise<RuleDetailsResponse>;
   createRule: (repositoryId: string, data: CreateRuleRequest) => Promise<StatusResponse>;
+  createRulesBulk: (
+    repositoryId: string,
+    data: BulkCreateRulesRequest,
+  ) => Promise<BulkCreateRulesResponse>;
   updateRule: (ruleId: string, data: UpdateRuleRequest) => Promise<StatusResponse>;
   deleteRule: (ruleId: string) => Promise<StatusResponse>;
   clearError: () => void;
@@ -32,6 +38,7 @@ const initialState: Omit<
   | 'fetchRules'
   | 'fetchRuleById'
   | 'createRule'
+  | 'createRulesBulk'
   | 'updateRule'
   | 'deleteRule'
   | 'clearError'
@@ -73,6 +80,15 @@ export const useRulesStore = create<RulesState>((set, get) => ({
       async () => await api.settings.rules.create(repositoryId, data),
       set,
       'Failed to create rule',
+      false,
+    ),
+
+  createRulesBulk: (repositoryId, data) =>
+    handleAsyncAction(
+      async () => await api.settings.rules.createBulk(repositoryId, data),
+      set,
+      'Failed to bulk create rules',
+      false,
     ),
 
   updateRule: (ruleId, data) =>

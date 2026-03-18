@@ -101,7 +101,7 @@ export const DropdownsSelect: React.FC<DropdownsSelectProps> = ({
             <DropdownMenuSeparator />
           </>
         )}
-        <DropdownMenuGroup>
+        <DropdownMenuGroup className="flex flex-col gap-[1px]">
           {options.map((option) => (
             <DropdownMenuItem
               className={cn(

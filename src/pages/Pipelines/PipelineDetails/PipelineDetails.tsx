@@ -13,6 +13,8 @@ import { usePipelineDetails } from './usePipelineDetails';
 export const PipelineDetails = () => {
   const {
     loading,
+    loadingRules,
+    checkboxLoading,
     pipeline,
     table,
     page,
@@ -33,8 +35,16 @@ export const PipelineDetails = () => {
     handleActivateRules,
   } = usePipelineDetails();
 
+  if (isRuleDialogOpen) {
+    return (
+      <div className="flex-colbg-primary flex w-full gap-6 p-6">
+        <Rule backLink={false} onClose={handleCloseRuleDialog} />
+      </div>
+    );
+  }
+
   return (
-    <div className="relative flex w-full flex-col gap-6 p-6">
+    <div className="flex w-full flex-col gap-6 p-6">
       <PageHeader
         loading={loading}
         title={pipeline?.name}
@@ -117,7 +127,7 @@ export const PipelineDetails = () => {
                   variant="secondaryOutline"
                   className="text-xs"
                   onClick={() => handleActivateRules('enable')}
-                  disabled={loading}
+                  disabled={checkboxLoading}
                 >
                   Activate
                 </Button>
@@ -125,19 +135,13 @@ export const PipelineDetails = () => {
                   variant="secondaryOutline"
                   className="text-xs"
                   onClick={() => handleActivateRules('disable')}
-                  disabled={loading}
+                  disabled={checkboxLoading}
                 >
                   Deactivate
                 </Button>
               </div>
             </>
           )}
-          {/* TODO: Add back in when we have a way to select rules for log_source */}
-          {/* pipeline?.log_source_name ? (
-            <span className="text-gray-chateau text-xs">
-              Rules matching log source "{pipeline?.log_source_name}" ({total})
-            </span>
-          ) : null} */}
         </div>
         <>
           <div className="flex items-center gap-3">
@@ -166,7 +170,7 @@ export const PipelineDetails = () => {
       <TableWrap
         table={table}
         columns={columns}
-        loading={loading}
+        loading={loadingRules}
         data={rules}
         rowSelection={rowSelection}
       />
@@ -177,13 +181,6 @@ export const PipelineDetails = () => {
         setLimit={setLimit}
         onPageChange={setPage}
       />
-      {isRuleDialogOpen && (
-        <div className="absolute inset-0">
-          <div className="bg-primary p-6">
-            <Rule backLink={false} onClose={handleCloseRuleDialog} />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

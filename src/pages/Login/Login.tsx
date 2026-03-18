@@ -1,12 +1,11 @@
 import { Button } from '@/components/Button';
 import { HelperText, Input, Label } from '@/components/Form';
+import { InputPassword } from '@/components/Form/Input';
 import { Logo } from '@/components/Header/Logo';
-import { Toaster } from '@/components/Toast';
 import { Loader2, LockIcon, MailIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLogin } from './useLogin';
 
-import { InputPassword } from '@/components/Form/Input';
 import './Login.scss';
 
 export const Login: React.FC = () => {
@@ -62,7 +61,7 @@ export const Login: React.FC = () => {
                   id="password"
                   iconLeft={<LockIcon className="text-gray-chateau size-4" />}
                   {...register('password', { required: 'Password is required' })}
-                  autoComplete="current-password"
+                  autoComplete="off"
                 />
                 {errors.password && (
                   <HelperText className="text-critical text-2xs font-medium">
@@ -82,7 +81,6 @@ export const Login: React.FC = () => {
           </form>
         </div>
       </motion.div>
-      <Toaster />
     </div>
   );
 };

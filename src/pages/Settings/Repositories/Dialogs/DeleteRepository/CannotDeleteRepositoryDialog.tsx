@@ -38,14 +38,16 @@ export const CannotDeleteRepositoryDialog: React.FC<CannotDeleteRepositoryDialog
             Repository cannot be deleted because it is in use
           </DialogDescription>
         </DialogHeader>
-        <div className="text-subdued space-y-2 px-6 text-xs break-all">
+        <div className="text-subdued space-y-2 px-6 text-xs">
           <p>
-            Repository <span className="text-success">"{repositoryName}"</span> cannot be deleted
-            because it is currently used in the following {pipelineWord}:
+            Repository <span className="text-success break-all">"{repositoryName}"</span> cannot be
+            deleted because it is currently used in the following {pipelineWord}:
           </p>
           <ul className="text-gray-chateau marker:text-success list-inside list-disc py-2 pl-4 marker:text-base">
             {pipelines.map((pipeline) => (
-              <li key={pipeline.id}>{pipeline.name}</li>
+              <li className="break-all" key={pipeline.id}>
+                {pipeline.name}
+              </li>
             ))}
           </ul>
           <p>Please remove this repository from {thisWord} before deleting it.</p>

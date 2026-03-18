@@ -5,9 +5,9 @@ import { convertSortingToApiParams, updateQueryParams } from '@/utils';
 import { getCoreRowModel, useReactTable, type SortingState } from '@tanstack/react-table';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { columns } from './columns';
+import { columns } from '../columns';
 
-export const useRepositoriesTable = () => {
+export const useRepositories = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlRepositoryId = searchParams.get('repositoryId');
   const { loading, rules, fetchRules } = useRulesStore();
@@ -17,7 +17,9 @@ export const useRepositoriesTable = () => {
   const [isCreateRepoDialogOpen, setIsCreateRepoDialogOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
   const rulesList = rules?.data || [];
-  const { search, debouncedSearch, setSearch } = useSearch();
+  const { search, debouncedSearch, searchFields, setSearch, setSearchFields } = useSearch({
+    defaultSearchFields: ['name'],
+  });
   const repositoryId = urlRepositoryId || activeRepositoryId || 'all';
 
   const repository = getRepositoryById(repositoryId);
@@ -54,10 +56,11 @@ export const useRepositoriesTable = () => {
       limit,
       repository_id: repositoryId !== 'all' ? repositoryId : undefined,
       search: debouncedSearch || undefined,
+      search_fields: searchFields.includes('content') ? undefined : searchFields.length ? searchFields : undefined,
       sort,
       order,
     });
-  }, [page, limit, repositoryId, sorting, debouncedSearch]);
+  }, [page, limit, repositoryId, sorting, debouncedSearch, searchFields]);
 
   const table = useReactTable({
     data: rulesList,
@@ -89,6 +92,17 @@ export const useRepositoriesTable = () => {
     setIsCreateRepoDialogOpen(false);
   };
 
+  const searchOptions = useMemo(() => {
+    return [
+      { label: 'By Name', value: 'name' },
+      { label: 'By Content', value: 'content' },
+    ];
+  }, []);
+
+  const onChangeSearchFields = (value: string) => {
+    setSearchFields([value]);
+  };
+
   return {
     loading,
     syncProcessing,
@@ -102,9 +116,13 @@ export const useRepositoriesTable = () => {
     totalPages,
     repositoryId,
     search,
+    searchFields,
+    searchOptions,
     setPage,
     setLimit,
     setSearch,
+    setSearchFields,
+    onChangeSearchFields,
     handleOpenUploadDialog,
     handleCloseUploadDialog,
     handleOpenCreateRepositoryDialog,

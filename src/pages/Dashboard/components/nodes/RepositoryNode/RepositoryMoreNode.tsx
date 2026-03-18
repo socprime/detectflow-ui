@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { MoreNodeData } from '../../../types';
 import { ANIMATION, LAYOUT } from '../../../utils/constants';
+import { TooltipShowMore } from '../../TooltipShowMore/TooltipShowMore';
 
 interface RepositoryMoreNodeProps {
   data: MoreNodeData;
@@ -24,12 +25,20 @@ export const RepositoryMoreNode = ({ data, id }: RepositoryMoreNodeProps) => {
     if (!structure) {
       return 0;
     }
-    return Math.max(0, structure.repositories.length - LAYOUT.maxVisibleTopics);
+    return Math.max(0, structure.repositories.length - LAYOUT.maxVisibleNodes);
+  }, [structure]);
+
+  const hiddenRepositories = useMemo(() => {
+    if (!structure) {
+      return [];
+    }
+    return structure.repositories.slice(LAYOUT.maxVisibleNodes);
   }, [structure]);
 
   if (hiddenCount === 0) {
     return null;
   }
+
   useEffect(() => {
     const timer = setTimeout(
       () => setIsVisible(true),
@@ -57,7 +66,7 @@ export const RepositoryMoreNode = ({ data, id }: RepositoryMoreNodeProps) => {
     >
       <Handle className="bg-success opacity-0" type="source" position={Position.Right} />
       <div className="relative z-10 text-sm italic" style={{ color: textDefault }}>
-        {`+ ${hiddenCount} more`}
+        <TooltipShowMore data={hiddenRepositories} children={`+ ${hiddenCount} more`} />
       </div>
     </motion.div>
   );

@@ -113,7 +113,7 @@ export const useDashboardEdges = () => {
     const sourceValues = structure.sourceTopics.map((t) => safeMetric(t.eps));
     const maxSourceValue = Math.max(0, ...sourceValues);
     let sourceAggWidth = 0;
-    const visibleSources = structure.sourceTopics.slice(0, LAYOUT.maxVisibleTopics);
+    const visibleSources = structure.sourceTopics.slice(0, LAYOUT.maxVisibleNodes);
 
     visibleSources.forEach((t, i) => {
       const w = scaleWidth(safeMetric(t.eps), maxSourceValue);
@@ -130,9 +130,9 @@ export const useDashboardEdges = () => {
       );
     });
 
-    if (structure.sourceTopics.length > LAYOUT.maxVisibleTopics) {
+    if (structure.sourceTopics.length > LAYOUT.maxVisibleNodes) {
       const collapsedValue = structure.sourceTopics
-        .slice(LAYOUT.maxVisibleTopics)
+        .slice(LAYOUT.maxVisibleNodes)
         .reduce((sum, t) => sum + safeMetric(t.eps), 0);
       const collapsedW = scaleWidth(collapsedValue, maxSourceValue);
       sourceAggWidth += collapsedW;
@@ -161,7 +161,7 @@ export const useDashboardEdges = () => {
     const repoValues = structure.repositories.map((r) => safeMetric(r.rulesCount));
     const maxRepoValue = Math.max(0, ...repoValues);
     let repoAggWidth = 0;
-    const visibleRepos = structure.repositories.slice(0, LAYOUT.maxVisibleTopics);
+    const visibleRepos = structure.repositories.slice(0, LAYOUT.maxVisibleNodes);
 
     visibleRepos.forEach((r, i) => {
       const w = scaleWidth(safeMetric(r.rulesCount), maxRepoValue);
@@ -178,9 +178,9 @@ export const useDashboardEdges = () => {
       );
     });
 
-    if (structure.repositories.length > LAYOUT.maxVisibleTopics) {
+    if (structure.repositories.length > LAYOUT.maxVisibleNodes) {
       const collapsedValue = structure.repositories
-        .slice(LAYOUT.maxVisibleTopics)
+        .slice(LAYOUT.maxVisibleNodes)
         .reduce((sum, r) => sum + safeMetric(r.rulesCount), 0);
       const collapsedW = scaleWidth(collapsedValue, maxRepoValue);
       repoAggWidth += collapsedW;
@@ -210,15 +210,15 @@ export const useDashboardEdges = () => {
       (t) => safeMetric(t.taggedEps) + safeMetric(t.untaggedEps),
     );
     const maxDestValue = Math.max(0, ...destValues);
-    const visibleDests = structure.destinationTopics.slice(0, LAYOUT.maxVisibleTopics);
+    const visibleDests = structure.destinationTopics.slice(0, LAYOUT.maxVisibleNodes);
     const destWidths = visibleDests.map((t) =>
       scaleWidth(safeMetric(t.taggedEps) + safeMetric(t.untaggedEps), maxDestValue),
     );
     const collapsedDestValue = structure.destinationTopics
-      .slice(LAYOUT.maxVisibleTopics)
+      .slice(LAYOUT.maxVisibleNodes)
       .reduce((sum, t) => sum + safeMetric(t.taggedEps) + safeMetric(t.untaggedEps), 0);
     const collapsedDestWidth =
-      structure.destinationTopics.length > LAYOUT.maxVisibleTopics
+      structure.destinationTopics.length > LAYOUT.maxVisibleNodes
         ? scaleWidth(collapsedDestValue, maxDestValue)
         : 0;
     const destAggWidth = destWidths.reduce((sum, w) => sum + w, 0) + collapsedDestWidth;
@@ -249,7 +249,7 @@ export const useDashboardEdges = () => {
         allPipelinesFailedOrWarning,
       );
     });
-    if (structure.destinationTopics.length > LAYOUT.maxVisibleTopics) {
+    if (structure.destinationTopics.length > LAYOUT.maxVisibleNodes) {
       const w = collapsedDestWidth;
       add(
         'e-dest-more',

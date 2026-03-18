@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { APISettings } from '../Dialogs/APISettings';
-import { CreateRepository } from '../Dialogs/CreateRepository';
+import { CreateRepository } from '../Dialogs/CreateRepository/CreateRepository';
 import { getRepositoryIcon } from '../utils';
 import { useRepositoriesAside } from './useRepositoriesAside';
 

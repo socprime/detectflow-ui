@@ -1,7 +1,15 @@
 export type { DashboardSnapshotResponse } from '@/config/types';
 
-export interface SyncStatusResponse {
+export interface RepoSyncStatus {
   status: 'idle' | 'running' | 'completed' | 'failed';
+  started_at: string | null;
+  completed_at: string | null;
+  error: string | null;
+}
+
+export interface SyncStatusResponse {
+  api_repos?: RepoSyncStatus;
+  git_hub_repos?: RepoSyncStatus;
 }
 
 export interface PaginatedResponse<T> {
@@ -300,10 +308,6 @@ export interface RunPreviewParseTestResponse {
   result: RunTransformTestResult[];
 }
 
-export interface GenerateMappingResponse {
-  mapping: string;
-}
-
 export interface LogSourcesResponse extends PaginatedResponse<LogSource> {}
 
 export interface RepositoriesData {
@@ -335,6 +339,16 @@ export interface Rule {
 }
 
 export interface RulesResponse extends PaginatedResponse<Rule> {}
+
+export interface BulkCreateRuleFailure {
+  name: string;
+  error: string;
+}
+
+export interface BulkCreateRulesResponse {
+  created: number;
+  failed: BulkCreateRuleFailure[];
+}
 
 export interface RuleDetailsResponse {
   id: string;
@@ -396,6 +410,14 @@ export interface ResetPasswordResponse {
 }
 
 export interface GenerateMappingResponse {
+  job_id: string;
+}
+
+export interface MappingStatusResponse {
+  status: 'queued' | 'running' | 'completed' | 'failed';
+  started_at: string;
+  completed_at: string;
+  error: string;
   mapping: string;
 }
 
@@ -413,9 +435,6 @@ export interface IPipelineRuntimeResponse {
   taskmanager_cpu: number;
   window_size_sec: number;
   checkpoint_interval_sec: number;
-  autoscaler_enabled: boolean;
-  autoscaler_min_parallelism: number;
-  autoscaler_max_parallelism: number;
 }
 
 export interface FlinkDefaultsParameters {

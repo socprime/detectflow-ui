@@ -11,7 +11,7 @@ import { Tooltip } from '@/components/Tooltip';
 import { PlayIcon, SparklesIcon } from 'lucide-react';
 import { Controller, type Control, type FieldErrors } from 'react-hook-form';
 import { TestResult } from './TestResult/TestResult';
-import type { LogSourceBoolState, LogSourceFormData } from './hooks/useLogSourceCreate';
+import type { LogSourceBoolState, LogSourceFormData } from './useLogSourceCreate';
 import { parseTestResult } from './utils';
 
 interface DetectSectionProps {
@@ -19,6 +19,7 @@ interface DetectSectionProps {
   errors: FieldErrors<LogSourceFormData>;
   repositoryOptions: MultiSelectOption[];
   loading: boolean;
+  loadingSigmaFields: boolean;
   boolState: LogSourceBoolState;
   onPasteFieldsFromRepositories: () => void;
   onOpenAIGenerateDialog: () => void;
@@ -30,6 +31,7 @@ export const DetectSection: React.FC<DetectSectionProps> = ({
   errors,
   repositoryOptions,
   loading,
+  loadingSigmaFields,
   boolState,
   onPasteFieldsFromRepositories,
   onOpenAIGenerateDialog,
@@ -106,8 +108,8 @@ export const DetectSection: React.FC<DetectSectionProps> = ({
                         className="shrink-0 p-2.5 text-xs"
                         type="button"
                         onClick={onPasteFieldsFromRepositories}
-                        disabled={boolState.isRunningDirectTest || boolState.isRunningCreateDialog}
-                        loading={boolState.isRunningCreateDialog}
+                        disabled={boolState.isRunningDirectTest || loadingSigmaFields}
+                        loading={loadingSigmaFields}
                       >
                         <PasteFieldsIcon className="size-4" />
                       </Button>
@@ -118,7 +120,7 @@ export const DetectSection: React.FC<DetectSectionProps> = ({
                         className="shrink-0 p-2.5 text-xs"
                         type="button"
                         onClick={onOpenAIGenerateDialog}
-                        disabled={boolState.isRunningDirectTest}
+                        disabled={boolState.isRunningDirectTest || loadingSigmaFields}
                         loading={boolState.isRunningDirectTest}
                       >
                         <SparklesIcon className="size-4" />
@@ -129,7 +131,7 @@ export const DetectSection: React.FC<DetectSectionProps> = ({
                       className="shrink-0 text-xs"
                       type="button"
                       onClick={onRunDirectTest}
-                      disabled={boolState.isRunningDirectTest}
+                      disabled={boolState.isRunningDirectTest || loadingSigmaFields}
                       loading={boolState.isRunningDirectTest}
                     >
                       <PlayIcon className="size-4" />

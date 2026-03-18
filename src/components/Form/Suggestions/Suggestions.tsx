@@ -1,8 +1,9 @@
+import { Button } from '@/components/Button';
 import { Input } from '@/components/Form/Input';
 import { ScrollArea } from '@/components/ScrollArea';
 import { cn } from '@/utils';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import { Check } from 'lucide-react';
+import { Check, XIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 export interface SuggestionOption {
@@ -48,15 +49,21 @@ export const Suggestions: React.FC<SuggestionsProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const lastSelectedValueRef = useRef('');
   const isSelectingRef = useRef(false);
+  const isFocusedRef = useRef(false);
+  const inputValueRef = useRef('');
+
+  const setInputValueSync = (val: string) => {
+    inputValueRef.current = val;
+    setInputValue(val);
+  };
 
   useEffect(() => {
-    const selectedOption = options.find((opt) => opt.value === value);
-    setInputValue(selectedOption ? selectedOption.label : value);
-    if (value) {
-      lastSelectedValueRef.current = value;
-    } else {
-      lastSelectedValueRef.current = '';
+    if (isFocusedRef.current) {
+      return;
     }
+    const selectedOption = options.find((opt) => opt.value === value);
+    setInputValueSync(selectedOption ? selectedOption.label : value);
+    lastSelectedValueRef.current = value ?? '';
   }, [value, options]);
 
   const labelCounts = useMemo(() => {
@@ -68,16 +75,21 @@ export const Suggestions: React.FC<SuggestionsProps> = ({
   }, [options]);
 
   const filteredOptions = useMemo(() => {
-    if (!inputValue || inputValue.length < minChars) {
+    const query = inputValueRef.current;
+    if (!query || query.length < minChars) {
       return showAllOnFocus ? options : [];
     }
-    return options.filter((option) =>
-      option.label.toLowerCase().includes(inputValue.toLowerCase()),
+    const lower = query.toLowerCase();
+    return options.filter(
+      (option) =>
+        option.label.toLowerCase().includes(lower) ||
+        ((labelCounts[option.label.toLowerCase()] || 0) > 1 &&
+          option.value.toLowerCase().includes(lower)),
     );
-  }, [options, inputValue, minChars, showAllOnFocus]);
+  }, [options, inputValue, minChars, showAllOnFocus, labelCounts]);
 
   const handleInputChange = (newValue: string) => {
-    setInputValue(newValue);
+    setInputValueSync(newValue);
     setHighlightedIndex(-1);
 
     if (newValue.length >= minChars || (showAllOnFocus && newValue.length === 0)) {
@@ -93,7 +105,7 @@ export const Suggestions: React.FC<SuggestionsProps> = ({
 
   const handleSelectOption = (option: SuggestionOption) => {
     isSelectingRef.current = true;
-    setInputValue(option.label);
+    setInputValueSync(option.label);
     onChange(option.value);
     lastSelectedValueRef.current = option.value;
     setOpen(false);
@@ -105,12 +117,15 @@ export const Suggestions: React.FC<SuggestionsProps> = ({
   };
 
   const handleInputFocus = () => {
-    if (showAllOnFocus || inputValue.length >= minChars) {
+    isFocusedRef.current = true;
+    setHighlightedIndex(-1);
+    if (showAllOnFocus || inputValueRef.current.length >= minChars) {
       setOpen(true);
     }
   };
 
   const handleInputBlur = () => {
+    isFocusedRef.current = false;
     setTimeout(() => {
       if (isSelectingRef.current) {
         return;
@@ -118,22 +133,24 @@ export const Suggestions: React.FC<SuggestionsProps> = ({
 
       setOpen(false);
 
-      if (!allowCustomValue && inputValue) {
+      const currentInputValue = inputValueRef.current;
+
+      if (!allowCustomValue && currentInputValue) {
         const exactMatches = options.filter(
-          (opt) => opt.label.toLowerCase() === inputValue.toLowerCase(),
+          (opt) => opt.label.toLowerCase() === currentInputValue.toLowerCase(),
         );
 
         if (exactMatches.length > 1) {
           const currentOption = options.find((opt) => opt.value === value);
           if (currentOption && exactMatches.some((opt) => opt.value === currentOption.value)) {
-            setInputValue(currentOption.label);
+            setInputValueSync(currentOption.label);
           } else {
-            setInputValue(exactMatches[0].label);
+            setInputValueSync(exactMatches[0].label);
             onChange(exactMatches[0].value);
             lastSelectedValueRef.current = exactMatches[0].value;
           }
         } else if (exactMatches.length === 1) {
-          setInputValue(exactMatches[0].label);
+          setInputValueSync(exactMatches[0].label);
           onChange(exactMatches[0].value);
           lastSelectedValueRef.current = exactMatches[0].value;
         } else {
@@ -143,12 +160,12 @@ export const Suggestions: React.FC<SuggestionsProps> = ({
             : undefined;
 
           if (currentOption) {
-            setInputValue(currentOption.label);
+            setInputValueSync(currentOption.label);
           } else if (lastSelectedOption) {
-            setInputValue(lastSelectedOption.label);
+            setInputValueSync(lastSelectedOption.label);
             onChange(lastSelectedOption.value);
           } else {
-            setInputValue('');
+            setInputValueSync('');
           }
         }
       }
@@ -190,20 +207,40 @@ export const Suggestions: React.FC<SuggestionsProps> = ({
   return (
     <PopoverPrimitive.Root open={open}>
       <PopoverPrimitive.Anchor asChild>
-        <Input
-          ref={inputRef}
-          type="text"
-          id={id}
-          name={name}
-          value={inputValue}
-          onChange={(e) => handleInputChange(e.target.value)}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          onKeyDown={handleKeyDown}
-          disabled={disabled}
-          placeholder={placeholder}
-          className={cn('pr-7 text-xs', className)}
-        />
+        <div className="relative">
+          <Input
+            ref={inputRef}
+            type="text"
+            id={id}
+            name={name}
+            value={inputValue}
+            loading={loading}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            onKeyDown={handleKeyDown}
+            disabled={disabled}
+            placeholder={placeholder}
+            className={cn('pr-7 text-xs', className)}
+          />
+          {inputValue && (
+            <Button
+              variant="ghost"
+              size="xxs"
+              aria-label="Clear"
+              className="absolute top-1/2 right-2 -translate-y-1/2 px-1 text-xs hover:bg-transparent"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                setInputValueSync('');
+                onChange('');
+                lastSelectedValueRef.current = '';
+                inputRef.current?.focus();
+              }}
+            >
+              <XIcon className="size-4" />
+            </Button>
+          )}
+        </div>
       </PopoverPrimitive.Anchor>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Content

@@ -3,7 +3,6 @@ import { DialogFooter } from '@/components/Dialog';
 import { DefaultDialog } from '@/components/Dialog/DefaultDialog';
 import { HelperText, Input, Label } from '@/components/Form';
 import { RepositoryType } from '@/models/providers/Types/Response';
-import { TrashIcon } from 'lucide-react';
 import { DeleteRepository, useDeleteRepositoryDialog } from '../DeleteRepository';
 import { useEditRepository, UseEditRepositoryProps } from './useEditRepository';
 
@@ -24,18 +23,12 @@ export const EditRepository: React.FC<EditRepositoryDialogProps> = ({
       onClose,
     });
 
-  const { openDeleteDialog, isDeleteDialogOpen, handleCloseDeleteDialog } =
-    useDeleteRepositoryDialog({
-      repositoryId,
-      onSuccess: () => {
-        onClose();
-      },
-    });
-
-  const handleOpenDeleteDialog = () => {
-    openDeleteDialog();
-    onClose();
-  };
+  const { isDeleteDialogOpen, handleCloseDeleteDialog } = useDeleteRepositoryDialog({
+    repositoryId,
+    onSuccess: () => {
+      onClose();
+    },
+  });
 
   return (
     <>
@@ -63,18 +56,7 @@ export const EditRepository: React.FC<EditRepositoryDialogProps> = ({
               )}
             </div>
           </div>
-          <DialogFooter className="flex gap-2 sm:justify-between">
-            <Button
-              className="text-xs"
-              type="button"
-              onClick={handleOpenDeleteDialog}
-              variant="criticalOutline"
-              loading={loading}
-              disabled={!repositoryId || loading}
-            >
-              <TrashIcon className="size-4" />
-              Delete
-            </Button>
+          <DialogFooter className="flex gap-2">
             <Button
               className="ml-auto text-xs"
               type="button"

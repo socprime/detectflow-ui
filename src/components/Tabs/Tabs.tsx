@@ -34,7 +34,7 @@ export function Tabs({
       defaultValue={initialValue}
       value={value}
       onValueChange={onValueChange}
-      className={cn('flex flex-col gap-4', className)}
+      className={cn('flex flex-col gap-2', className)}
     >
       <TabsList className={tabsListClassName}>
         {tabs.map((tab) => (
@@ -43,7 +43,6 @@ export function Tabs({
           </TabsTrigger>
         ))}
       </TabsList>
-
       {tabs.map((tab) => (
         <TabsContent key={tab.value} value={tab.value}>
           {tab.content}

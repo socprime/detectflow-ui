@@ -8,11 +8,12 @@ import { Controller } from 'react-hook-form';
 import { AIGenerateDialog } from './AIGenerateDialog/AIGenerateDialog';
 import { DetectSection } from './DetectSection';
 import { TransformSection } from './TransformSection';
-import { useLogSourceCreate } from './hooks/useLogSourceCreate';
+import { useLogSourceCreate } from './useLogSourceCreate';
 
 export const LogSourceCreate: React.FC = () => {
   const {
     loading,
+    loadingSigmaFields,
     logSourceId,
     isDirty,
     isCreateMode,
@@ -133,6 +134,7 @@ export const LogSourceCreate: React.FC = () => {
           errors={errors}
           repositoryOptions={repositoryOptions}
           loading={loading}
+          loadingSigmaFields={loadingSigmaFields}
           boolState={boolState}
           onPasteFieldsFromRepositories={handlePasteFieldsFromRepositories}
           onOpenAIGenerateDialog={handleOpenAIGenerateDialog}

@@ -3,6 +3,7 @@ export * from './auth';
 export * from './dashboard';
 export * from './filters';
 export * from './logSources';
+export * from './mapping';
 export * from './pipelineRuntime';
 export * from './pipelines';
 export * from './repositories';
