@@ -7,13 +7,15 @@ import { ScrollArea } from '@/components/ScrollArea';
 import { cn } from '@/utils';
 import { UploadIcon, XIcon } from 'lucide-react';
 import { useCallback } from 'react';
-import { useUploadRules } from './useUploadRules';
+import { useUploadRules } from './hooks';
 
 interface UploadRulesDialogProps {
   isOpen: boolean;
   onClose: () => void;
   repositoryId?: string;
 }
+
+const MAX_VISIBLE_FILES = 200;
 
 export const UploadRulesDialog: React.FC<UploadRulesDialogProps> = ({
   isOpen,
@@ -26,6 +28,7 @@ export const UploadRulesDialog: React.FC<UploadRulesDialogProps> = ({
     isLoading,
     isArchiveProcessing,
     progress,
+    estimatedTimeLeft,
     archivePassword,
     archivePasswordError,
     pendingArchivesCount,
@@ -35,6 +38,7 @@ export const UploadRulesDialog: React.FC<UploadRulesDialogProps> = ({
     handleDrop,
     handleFileSelect,
     handleUpload,
+    handleAbort,
     handleRemoveFile,
     handleClearFiles,
     handleClose,
@@ -188,7 +192,7 @@ export const UploadRulesDialog: React.FC<UploadRulesDialogProps> = ({
               </div>
               <ScrollArea className="max-h-50 [&>[data-slot=scroll-area-viewport]]:max-h-50">
                 <div className="flex flex-col gap-1">
-                  {files.map((fileItem, index) => (
+                  {files.slice(0, MAX_VISIBLE_FILES).map((fileItem, index) => (
                     <div
                       key={`${fileItem.name}-${index}`}
                       className="text-gray-chateau bg-primary flex items-center justify-between gap-2 rounded-sm px-2 py-1 text-xs"
@@ -213,6 +217,11 @@ export const UploadRulesDialog: React.FC<UploadRulesDialogProps> = ({
                       )}
                     </div>
                   ))}
+                  {files.length > MAX_VISIBLE_FILES && (
+                    <div className="text-gray-chateau px-2 py-1 text-xs">
+                      ...and {(files.length - MAX_VISIBLE_FILES).toLocaleString()} more files
+                    </div>
+                  )}
                 </div>
               </ScrollArea>
             </div>
@@ -221,7 +230,12 @@ export const UploadRulesDialog: React.FC<UploadRulesDialogProps> = ({
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-subdued">Uploading rules...</span>
-                <span className="text-gray-chateau">{progress}%</span>
+                <div className="flex items-center gap-2">
+                  {estimatedTimeLeft && (
+                    <span className="text-gray-chateau">{estimatedTimeLeft}</span>
+                  )}
+                  <span className="text-gray-chateau">{progress}%</span>
+                </div>
               </div>
               <div className="border-border bg-secondary h-2 w-full overflow-hidden rounded-full border">
                 <div
@@ -236,11 +250,10 @@ export const UploadRulesDialog: React.FC<UploadRulesDialogProps> = ({
           <Button
             className="text-xs"
             type="button"
-            onClick={handleClose}
+            onClick={isLoading ? handleAbort : handleClose}
             variant="secondaryOutline"
-            disabled={isLoading}
           >
-            Cancel
+            {isLoading ? 'Stop' : 'Cancel'}
           </Button>
           <Button
             className="text-xs"

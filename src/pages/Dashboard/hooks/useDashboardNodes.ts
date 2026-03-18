@@ -73,7 +73,7 @@ export const useDashboardNodes = () => {
       data: {},
     });
 
-    const visibleSourceTopics = structure.sourceTopics.slice(0, LAYOUT.maxVisibleTopics);
+    const visibleSourceTopics = structure.sourceTopics.slice(0, LAYOUT.maxVisibleNodes);
 
     const sourceStartY = centerY - 40 - (visibleSourceTopics.length * LAYOUT.verticalSpacing) / 2;
 
@@ -99,7 +99,7 @@ export const useDashboardNodes = () => {
       });
     });
 
-    if (structure.sourceTopics.length > LAYOUT.maxVisibleTopics) {
+    if (structure.sourceTopics.length > LAYOUT.maxVisibleNodes) {
       nodesList.push({
         id: 'source-more',
         type: 'moreSourceTopics',
@@ -136,7 +136,7 @@ export const useDashboardNodes = () => {
       data: {},
     });
 
-    const visibleRepos = structure.repositories.slice(0, LAYOUT.maxVisibleTopics);
+    const visibleRepos = structure.repositories.slice(0, LAYOUT.maxVisibleNodes);
 
     visibleRepos.forEach((repo, i) => {
       const nodeId = `repo-${repo.id}`;
@@ -154,7 +154,7 @@ export const useDashboardNodes = () => {
       });
     });
 
-    if (structure.repositories.length > LAYOUT.maxVisibleTopics) {
+    if (structure.repositories.length > LAYOUT.maxVisibleNodes) {
       nodesList.push({
         id: 'repo-more',
         type: 'moreRepositories',
@@ -175,7 +175,7 @@ export const useDashboardNodes = () => {
       data: {},
     });
 
-    const visibleDestTopics = structure.destinationTopics.slice(0, LAYOUT.maxVisibleTopics);
+    const visibleDestTopics = structure.destinationTopics.slice(0, LAYOUT.maxVisibleNodes);
     const destStartY = centerY + 125 - (visibleDestTopics.length * LAYOUT.verticalSpacing) / 2;
     const destX = containerWidth - edgeMargin - LAYOUT.topicNodeWidth;
 
@@ -201,7 +201,7 @@ export const useDashboardNodes = () => {
       });
     });
 
-    if (structure.destinationTopics.length > LAYOUT.maxVisibleTopics) {
+    if (structure.destinationTopics.length > LAYOUT.maxVisibleNodes) {
       nodesList.push({
         id: 'dest-more',
         type: 'moreDestinationTopics',

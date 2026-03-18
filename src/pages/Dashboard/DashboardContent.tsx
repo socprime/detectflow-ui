@@ -73,7 +73,7 @@ const DashboardContentInner: React.FC = () => {
             proOptions={{ hideAttribution: true }}
             minZoom={0.5}
             maxZoom={2}
-            panOnDrag={true}
+            panOnDrag={false}
             panOnScroll={false}
             zoomOnScroll={false}
             zoomOnDoubleClick={false}

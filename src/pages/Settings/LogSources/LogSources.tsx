@@ -3,7 +3,6 @@ import { ConditionalContent } from '@/components/ConditionalContent';
 import { SearchInput } from '@/components/Form/SearchInput';
 import { Skeleton } from '@/components/Loading/Skeleton';
 import { PageHeader } from '@/components/PageHeader';
-import { PaginationWrap } from '@/components/Pagination';
 import { routes } from '@/models/router';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
@@ -12,8 +11,7 @@ import { LogSourcesEmptyState } from './LogSourcesEmptyState';
 import { useLogSources } from './useLogSources';
 
 export const LogSources: React.FC = () => {
-  const { loading, search, logSources, page, limit, totalPages, setPage, setSearch, setLimit } =
-    useLogSources();
+  const { loading, search, logSources, setSearch } = useLogSources();
 
   return (
     <div className="flex h-full w-full flex-col gap-6">
@@ -50,20 +48,11 @@ export const LogSources: React.FC = () => {
         }
         loadedContent={
           logSources?.length > 0 ? (
-            <>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
-                {logSources?.map((logSource) => (
-                  <LogSourcesCard className="flex-1" logSource={logSource} key={logSource.id} />
-                ))}
-              </div>
-              <PaginationWrap
-                page={page}
-                totalPages={totalPages}
-                limit={limit}
-                setLimit={setLimit}
-                onPageChange={setPage}
-              />
-            </>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+              {logSources?.map((logSource) => (
+                <LogSourcesCard className="flex-1" logSource={logSource} key={logSource.id} />
+              ))}
+            </div>
           ) : (
             <LogSourcesEmptyState />
           )

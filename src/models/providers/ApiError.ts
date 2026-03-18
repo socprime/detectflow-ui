@@ -16,8 +16,16 @@ export class ApiError extends Error {
     } else if (status === 502) {
       message = 'Gateway error. The backend server is not responding.';
     } else if (status === 500) {
-      message =
-        'Internal server error. The backend server encountered an error. Please check if the backend server is running and accessible.';
+      if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
+        message = data.message;
+      } else if (data && typeof data === 'object' && 'detail' in data && typeof data.detail === 'string') {
+        message = data.detail;
+      } else if (data && typeof data === 'string' && data.trim() && !data.trim().startsWith('<')) {
+        message = data.trim();
+      } else {
+        message =
+          'Internal server error. The backend server encountered an error. Please check if the backend server is running and accessible.';
+      }
     } else if (data) {
       if (typeof data === 'string') {
         if (data.trim().startsWith('<html>') || data.trim().startsWith('<!DOCTYPE')) {

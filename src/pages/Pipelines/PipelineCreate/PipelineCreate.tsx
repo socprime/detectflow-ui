@@ -13,6 +13,7 @@ import {
   Label,
   MultiSelect,
   SelectDefault,
+  Suggestions,
   Switch,
 } from '@/components/Form';
 import { PageHeader } from '@/components/PageHeader';
@@ -145,16 +146,16 @@ export const PipelineCreate: React.FC = () => {
               control={control}
               rules={{ required: 'Destination topic is required' }}
               render={({ field }) => (
-                <SelectDefault
+                <Suggestions
                   id="destination-topic"
-                  name="destination_topic"
+                  dropdownClassName="w-[var(--radix-popover-trigger-width)]"
+                  options={topicOptions}
+                  value={field.value || ''}
+                  onChange={field.onChange}
                   placeholder="Select Destination Topic"
                   className="bg-primary"
                   disabled={loading}
                   loading={loading}
-                  options={topicOptions}
-                  value={field.value || ''}
-                  onChange={field.onChange}
                 />
               )}
             />
@@ -396,9 +397,7 @@ export const PipelineCreate: React.FC = () => {
             </AccordionTrigger>
             <AccordionContent className="pb-6">
               <PipelineRuntimeFormFields
-                control={control}
                 errors={errors}
-                watch={watch}
                 register={register}
                 isReadOnly={isEditMode}
               />

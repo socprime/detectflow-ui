@@ -1,0 +1,1 @@
+export { ThirdPartyTab } from './ThirdPartyTab';

@@ -49,7 +49,7 @@ interface RepositoriesState {
   addSocprimeRepositories: (data: AddSocprimeRepositoriesRequest) => Promise<StatusResponse>;
   addExternalRepositories: (data: AddExternalRepositoriesRequest) => Promise<StatusResponse>;
   deleteRepository: (repositoryId: string) => Promise<StatusResponse>;
-  syncRepositories: (fullSync?: boolean) => Promise<StatusResponse>;
+  syncRepositories: () => Promise<StatusResponse>;
   updateRepositoryApiKey: (data: UpdateRepositoryApiKeyRequest) => Promise<StatusResponse>;
   setActiveRepositoryId: (repositoryId: string) => void;
   getRepositoryById: (repositoryId: string | null | undefined) => RepositoriesData | null;
@@ -182,9 +182,9 @@ export const useRepositoriesStore = create<RepositoriesState>((set, get) => ({
       'Failed to delete repository',
     ),
 
-  syncRepositories: (fullSync) =>
+  syncRepositories: () =>
     handleAsyncAction(
-      async () => await api.settings.repositories.sync(fullSync),
+      async () => await api.settings.repositories.sync(),
       set,
       'Failed to sync repositories',
     ),

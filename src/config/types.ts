@@ -40,6 +40,7 @@ export interface SSEPipelineStat {
   source_topics: string[];
   destination_topic: string;
   repository_ids?: string[];
+  save_untagged?: boolean;
   input_eps: number;
   output_eps: number;
   topic_lag: number;

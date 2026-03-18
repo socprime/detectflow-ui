@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { MoreNodeData } from '../../../types';
 import { ANIMATION, LAYOUT } from '../../../utils/constants';
+import { TooltipShowMore } from '../../TooltipShowMore/TooltipShowMore';
 
 interface DestinationTopicMoreNodeProps {
   data: MoreNodeData;
@@ -25,7 +26,14 @@ export const DestinationTopicMoreNode = ({ data, id }: DestinationTopicMoreNodeP
     if (!structure) {
       return 0;
     }
-    return Math.max(0, structure.destinationTopics.length - LAYOUT.maxVisibleTopics);
+    return Math.max(0, structure.destinationTopics.length - LAYOUT.maxVisibleNodes);
+  }, [structure]);
+
+  const hiddenDestinations = useMemo(() => {
+    if (!structure) {
+      return [];
+    }
+    return structure.destinationTopics.slice(LAYOUT.maxVisibleNodes);
   }, [structure]);
 
   if (hiddenCount === 0) {
@@ -60,7 +68,7 @@ export const DestinationTopicMoreNode = ({ data, id }: DestinationTopicMoreNodeP
     >
       <Handle className="bg-purple opacity-0" type="target" position={Position.Left} />
       <div className="relative z-10 text-sm italic" style={{ color: textDefault }}>
-        {`+ ${hiddenCount} more`}
+        <TooltipShowMore data={hiddenDestinations} children={`+ ${hiddenCount} more`} />
       </div>
     </motion.div>
   );

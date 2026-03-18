@@ -41,13 +41,35 @@ export class ZipPasswordRequiredError extends Error {
   }
 }
 
-const MAX_ARCHIVE_ENTRIES = 1000;
+const MAX_ARCHIVE_ENTRIES = 5000;
 const MAX_ARCHIVE_SIZE_BYTES = 100 * 1024 * 1024;
 const MAX_TOTAL_UNCOMPRESSED_BYTES = 150 * 1024 * 1024;
 const MAX_ENTRY_UNCOMPRESSED_BYTES = 5 * 1024 * 1024;
 
 const YAML_EXTENSIONS = new Set(['yml', 'yaml']);
 const ZIP_EXTENSIONS = new Set(['zip']);
+
+const formatBytes = (bytes: number): string => {
+  if (bytes >= 1024 * 1024) return `${Math.round(bytes / (1024 * 1024))} MB`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${bytes} B`;
+};
+
+export const formatTimeLeft = (ms: number): string => {
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return '';
+  }
+  const seconds = Math.round(ms / 1000);
+  if (seconds < 60) {
+    return `~${seconds}s left`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (remainingSeconds === 0) {
+    return `~${minutes}m left`;
+  }
+  return `~${minutes}m ${remainingSeconds}s left`;
+};
 
 const getExtension = (name: string): string => {
   const parts = name.toLowerCase().split('.');
@@ -89,7 +111,6 @@ const isZipPasswordError = (error: unknown): boolean => {
 export const parseYamlTitle = (content: string): string | null => {
   try {
     const patterns = [
-      /^title:\s*["']([^"']+)["']\s*$/m,
       /^title:\s*'([^']+)'\s*$/m,
       /^title:\s*"([^"]+)"\s*$/m,
       /^title:\s*(.+?)\s*$/m,
@@ -234,6 +255,25 @@ export const getAllRuleFilesFromDataTransfer = async (
   return files;
 };
 
+export const countYamlFilesInZip = async (archive: File, password?: string): Promise<number> => {
+  const reader = new ZipReader(new BlobReader(archive), password ? { password } : undefined);
+  try {
+    const entries = await reader.getEntries();
+    return entries.filter(
+      (e) => !e.directory && isValidYamlFileName(e.filename) && !isMacOsMetadataPath(e.filename),
+    ).length;
+  } catch (error) {
+    if (isZipPasswordError(error)) {
+      throw new ZipPasswordRequiredError(
+        password ? 'Invalid archive password.' : 'Archive password required.',
+      );
+    }
+    throw error;
+  } finally {
+    await reader.close();
+  }
+};
+
 export const extractYamlFilesFromZip = async (
   archive: File,
   password?: string,
@@ -243,22 +283,24 @@ export const extractYamlFilesFromZip = async (
     throw new Error('Unsupported archive format. Only .zip is allowed.');
   }
   if (archive.size > MAX_ARCHIVE_SIZE_BYTES) {
-    throw new Error('Archive is too large.');
+    throw new Error(
+      `Archive is too large. Maximum allowed: ${formatBytes(MAX_ARCHIVE_SIZE_BYTES)}.`,
+    );
   }
 
   const reader = new ZipReader(new BlobReader(archive), password ? { password } : undefined);
   try {
     const entries = await reader.getEntries();
-    if (entries.length > MAX_ARCHIVE_ENTRIES) {
-      throw new Error('Archive contains too many entries.');
-    }
+    const fileEntries = entries.filter((e) => !e.directory);
 
-    const yamlEntries = entries.filter(
-      (entry) =>
-        !entry.directory &&
-        isValidYamlFileName(entry.filename) &&
-        !isMacOsMetadataPath(entry.filename),
+    const yamlEntries = fileEntries.filter(
+      (entry) => isValidYamlFileName(entry.filename) && !isMacOsMetadataPath(entry.filename),
     );
+    if (yamlEntries.length > MAX_ARCHIVE_ENTRIES) {
+      throw new Error(
+        `Archive contains too many YAML files. Maximum allowed: ${MAX_ARCHIVE_ENTRIES.toLocaleString()}.`,
+      );
+    }
     const totalBytes = yamlEntries.reduce((sum, entry) => sum + (entry.uncompressedSize || 0), 0);
     let totalUncompressed = 0;
     let processedBytes = 0;
@@ -269,18 +311,19 @@ export const extractYamlFilesFromZip = async (
       if (!safeName) {
         throw new Error('Archive contains unsafe paths.');
       }
-      if (isMacOsMetadataPath(safeName)) {
-        continue;
-      }
       if (!Number.isFinite(entry.uncompressedSize)) {
         throw new Error('Archive entry size is invalid.');
       }
       if (entry.uncompressedSize > MAX_ENTRY_UNCOMPRESSED_BYTES) {
-        throw new Error('Archive contains oversized files.');
+        throw new Error(
+          `Archive contains oversized files. Maximum allowed: ${formatBytes(MAX_ENTRY_UNCOMPRESSED_BYTES)}.`,
+        );
       }
       totalUncompressed += entry.uncompressedSize;
       if (totalUncompressed > MAX_TOTAL_UNCOMPRESSED_BYTES) {
-        throw new Error('Archive exceeds extraction size limits.');
+        throw new Error(
+          `Archive exceeds extraction size limits. Maximum allowed: ${formatBytes(MAX_TOTAL_UNCOMPRESSED_BYTES)}.`,
+        );
       }
       if (!('getData' in entry)) {
         throw new Error('Archive contains unsupported entry type.');

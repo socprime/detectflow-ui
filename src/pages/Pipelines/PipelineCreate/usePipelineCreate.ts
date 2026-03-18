@@ -52,15 +52,6 @@ export const usePipelineCreate = () => {
     checkpoint_interval_sec: isEditMode
       ? pipeline?.checkpoint_interval_sec || 0
       : pipelineRuntime?.checkpoint_interval_sec || 0,
-    autoscaler_enabled: isEditMode
-      ? pipeline?.autoscaler_enabled || false
-      : pipelineRuntime?.autoscaler_enabled || false,
-    autoscaler_min_parallelism: isEditMode
-      ? pipeline?.autoscaler_min_parallelism || 0
-      : pipelineRuntime?.autoscaler_min_parallelism || 0,
-    autoscaler_max_parallelism: isEditMode
-      ? pipeline?.autoscaler_max_parallelism || 0
-      : pipelineRuntime?.autoscaler_max_parallelism || 0,
     window_size_sec: isEditMode
       ? pipeline?.window_size_sec || 0
       : pipelineRuntime?.window_size_sec || 0,
@@ -163,9 +154,6 @@ export const usePipelineCreate = () => {
       taskmanager_cpu: data.taskmanager_cpu,
       window_size_sec: data.window_size_sec,
       checkpoint_interval_sec: data.checkpoint_interval_sec,
-      autoscaler_enabled: data.autoscaler_enabled,
-      autoscaler_min_parallelism: data.autoscaler_min_parallelism,
-      autoscaler_max_parallelism: data.autoscaler_max_parallelism,
     };
 
     const createData: CreatePipelineRequest = {

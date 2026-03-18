@@ -26,9 +26,7 @@ export const PipelinesNode = memo(() => {
     if (selectedNode.type === 'source') {
       const selectedSourceId = normalizeSourceId(selectedNode.id);
       return pipelineStatistics.filter((pipeline) =>
-        pipeline.source_topics.some(
-          (sourceId) => normalizeSourceId(sourceId) === selectedSourceId,
-        ),
+        pipeline.source_topics.some((sourceId) => normalizeSourceId(sourceId) === selectedSourceId),
       ).length;
     }
 
@@ -51,7 +49,7 @@ export const PipelinesNode = memo(() => {
     if (selectedNode.type === 'sourceMore' && structure) {
       const hiddenSourceIds = new Set(
         structure.sourceTopics
-          .slice(LAYOUT.maxVisibleTopics)
+          .slice(LAYOUT.maxVisibleNodes)
           .map((topic) => normalizeSourceId(topic.id)),
       );
 
@@ -63,7 +61,7 @@ export const PipelinesNode = memo(() => {
     if (selectedNode.type === 'destMore' && structure) {
       const hiddenDestinationIds = new Set(
         structure.destinationTopics
-          .slice(LAYOUT.maxVisibleTopics)
+          .slice(LAYOUT.maxVisibleNodes)
           .map((topic) => normalizeDestinationId(topic.id)),
       );
 
@@ -75,7 +73,7 @@ export const PipelinesNode = memo(() => {
     if (selectedNode.type === 'repoMore' && structure) {
       const hiddenRepositoryIds = new Set(
         structure.repositories
-          .slice(LAYOUT.maxVisibleTopics)
+          .slice(LAYOUT.maxVisibleNodes)
           .map((repo) => normalizeRepositoryId(repo.id)),
       );
 

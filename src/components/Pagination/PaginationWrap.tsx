@@ -136,7 +136,7 @@ export const PaginationWrap: React.FC<PaginationWrapProps> = ({
           <PaginationItem>
             <PaginationNext
               onClick={nextPageClick}
-              className={`h-8 text-xs ${page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
+              className={`h-8 text-xs ${page === totalPages || totalPages === 0 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
             />
           </PaginationItem>
         </PaginationContent>

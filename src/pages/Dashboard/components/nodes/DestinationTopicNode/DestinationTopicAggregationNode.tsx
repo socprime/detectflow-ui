@@ -3,14 +3,18 @@ import { useDashboardStore } from '@/store/dashboard';
 import { Handle, Position } from '@xyflow/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { memo, useMemo } from 'react';
+import { LAYOUT } from '../../../utils/constants';
 
 export const DestinationTopicAggregationNode = memo(() => {
   const { primary, default: textDefault } = useThemeColors();
   const metricMode = useDashboardStore((state) => state.metricMode);
   const structure = useDashboardStore((state) => state.dashboardStructure);
   const values = useDashboardStore((state) => state.dashboardValues);
+  const pipelinesStats = useDashboardStore((state) => state.dashboardData?.pipelines_stats ?? []);
   const selectedNode = useDashboardStore((state) => state.selectedNode);
+  const selectedSources = useDashboardStore((state) => state.selectedSources);
   const selectedDestinations = useDashboardStore((state) => state.selectedDestinations);
+  const selectedRepos = useDashboardStore((state) => state.selectedRepos);
 
   const { taggedValue, untaggedValue } = useMemo(() => {
     if (!structure || !values) {
@@ -48,7 +52,71 @@ export const DestinationTopicAggregationNode = memo(() => {
     };
   }, [structure, values, selectedNode, selectedDestinations]);
 
-  const showUntagged = selectedNode !== null;
+  const showUntagged = useMemo(() => {
+    if (!selectedNode || !structure) {
+      return false;
+    }
+
+    const { type } = selectedNode;
+
+    if (type === 'source') {
+      const sourceIds = new Set(
+        selectedSources
+          .filter((id) => id !== 'source-more')
+          .map((id) => id.replace(/^source-/, '')),
+      );
+      return pipelinesStats.some(
+        (p) => p.save_untagged && p.source_topics.some((s) => sourceIds.has(s)),
+      );
+    }
+
+    if (type === 'sourceMore') {
+      const hiddenSourceIds = new Set(
+        structure.sourceTopics.slice(LAYOUT.maxVisibleNodes).map((t) => t.id),
+      );
+      return pipelinesStats.some(
+        (p) => p.save_untagged && p.source_topics.some((s) => hiddenSourceIds.has(s)),
+      );
+    }
+
+    if (type === 'destination') {
+      const destIds = new Set(
+        selectedDestinations
+          .filter((id) => id !== 'dest-more')
+          .map((id) => id.replace(/^dest-/, '')),
+      );
+      return pipelinesStats.some((p) => p.save_untagged && destIds.has(p.destination_topic));
+    }
+
+    if (type === 'destMore') {
+      const hiddenDestIds = new Set(
+        structure.destinationTopics.slice(LAYOUT.maxVisibleNodes).map((t) => t.id),
+      );
+      return pipelinesStats.some((p) => p.save_untagged && hiddenDestIds.has(p.destination_topic));
+    }
+
+    if (type === 'repository') {
+      const repoIds = new Set(
+        selectedRepos.filter((id) => id !== 'repo-more').map((id) => id.replace(/^repo-/, '')),
+      );
+      return pipelinesStats.some(
+        (p) => p.save_untagged && (p.repository_ids ?? []).some((r) => repoIds.has(r)),
+      );
+    }
+
+    if (type === 'repoMore') {
+      return pipelinesStats.some((p) => p.save_untagged);
+    }
+
+    return false;
+  }, [
+    selectedNode,
+    selectedSources,
+    selectedDestinations,
+    selectedRepos,
+    pipelinesStats,
+    structure,
+  ]);
 
   return (
     <motion.div

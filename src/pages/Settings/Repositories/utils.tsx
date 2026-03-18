@@ -1,7 +1,7 @@
+import SocPrimeIcon from '@/assets/svg/soc-prime.svg?react';
 import { RepositoryType } from '@/models/providers/Types/Response';
 import { FolderIcon } from 'lucide-react';
 import { ExternalRepositoryData } from './ExternalRepositoryData';
-import { SocPrimeIcon } from './Icons';
 
 interface GetRepositoryIconProps {
   id: string;
@@ -24,7 +24,7 @@ export const getRepositoryIcon = ({
     case 'local':
       return <FolderIcon className={classes} />;
     case 'external':
-      return ExternalRepositoryData[id]?.icon({ className: classes }) || null;
+      return ExternalRepositoryData[id]?.icon(classes) || null;
     default:
       return null;
   }

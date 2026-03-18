@@ -16,6 +16,7 @@ import { createBaseActions, handleAsyncAction } from './middleware';
 
 interface PipelinesState {
   loading: boolean;
+  loadingRules: boolean;
   error: string | null;
   pipelineStatistics: PipelineStatisticsResponse | null;
   pipelines: PipelinesResponse | null;
@@ -23,7 +24,12 @@ interface PipelinesState {
   pipelineRules: PipelineRulesResponse | null;
 
   fetchPipelines: (params?: PaginationParams, withLoading?: boolean) => Promise<PipelinesResponse>;
-  fetchPipelineById: (pipelineId: string) => Promise<PipelineResponse>;
+  fetchPipelineById: (pipelineId: string, withLoading?: boolean) => Promise<PipelineResponse>;
+  fetchPipelineRules: (
+    pipelineId: string,
+    params?: PaginationParams,
+    withLoading?: boolean,
+  ) => Promise<PipelineRulesResponse>;
   createPipeline: (data: CreatePipelineRequest) => Promise<StatusResponse>;
   updatePipeline: (
     pipelineId: string,
@@ -31,14 +37,11 @@ interface PipelinesState {
     withLoading?: boolean,
   ) => Promise<StatusResponse>;
   deletePipeline: (pipelineId: string) => Promise<StatusResponse>;
-  fetchPipelineRules: (
-    pipelineId: string,
-    params?: PaginationParams,
-  ) => Promise<PipelineRulesResponse>;
   updatePipelineRule: (
     pipelineId: string,
     ruleId: string,
     status: 'enable' | 'disable',
+    withLoading?: boolean,
   ) => Promise<StatusResponse>;
   clearError: () => void;
   reset: () => void;
@@ -57,6 +60,7 @@ const initialState: Omit<
   | 'reset'
 > = {
   loading: false,
+  loadingRules: false,
   error: '',
   pipelineStatistics: null,
   pipelines: {
@@ -87,7 +91,7 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
       withLoading,
     ),
 
-  fetchPipelineById: async (pipelineId) =>
+  fetchPipelineById: async (pipelineId, withLoading = true) =>
     handleAsyncAction(
       async () => {
         const pipeline = await api.pipelines.getById(pipelineId);
@@ -96,6 +100,7 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
       },
       set,
       'Failed to fetch pipeline details',
+      withLoading,
     ),
 
   createPipeline: async (data) =>
@@ -120,7 +125,7 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
       'Failed to delete pipeline',
     ),
 
-  fetchPipelineRules: async (pipelineId, params) =>
+  fetchPipelineRules: async (pipelineId, params, withLoading = true) =>
     handleAsyncAction(
       async () => {
         const pipelineRules = await api.pipelines.getDetailsRules(pipelineId, params);
@@ -129,13 +134,17 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
       },
       set,
       'Failed to fetch pipeline rules',
+      withLoading,
+      'loadingRules',
     ),
 
-  updatePipelineRule: async (pipelineId, ruleId, status) =>
+  updatePipelineRule: async (pipelineId, ruleId, status, withLoading = true) =>
     handleAsyncAction(
       async () => await api.pipelines.updateRuleStatus(pipelineId, ruleId, status),
       set,
       'Failed to update pipeline rule',
+      withLoading,
+      'loadingRules',
     ),
 
   ...createBaseActions(initialState, set),

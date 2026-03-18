@@ -100,10 +100,7 @@ export const api = {
       ): Promise<Response.StatusResponse> => patch(`/repositories/${repositoryId}/sync`, data),
       delete: (repositoryId: string): Promise<Response.StatusResponse> =>
         del(`/repositories/${repositoryId}`),
-      sync: (fullSync?: boolean): Promise<Response.StatusResponse> => {
-        const params = fullSync !== undefined ? { full_sync: fullSync } : {};
-        return post(`/sync-repositories${buildQueryString(params)}`);
-      },
+      sync: (): Promise<Response.StatusResponse> => post('/sync-repositories'),
       syncStatus: (): Promise<Response.SyncStatusResponse> => get('/sync-repositories/status'),
     },
     settings: {
@@ -121,6 +118,11 @@ export const api = {
         data: Request.CreateRuleRequest,
       ): Promise<Response.StatusResponse> =>
         post(`/rules${buildQueryString({ repository_id: repositoryId })}`, data),
+      createBulk: (
+        repositoryId: string,
+        data: Request.BulkCreateRulesRequest,
+      ): Promise<Response.BulkCreateRulesResponse> =>
+        post(`/rules/bulk${buildQueryString({ repository_id: repositoryId })}`, data),
       update: (ruleId: string, data: Request.UpdateRuleRequest): Promise<Response.StatusResponse> =>
         patch(`/rules/${ruleId}`, data),
       delete: (ruleId: string): Promise<Response.StatusResponse> => del(`/rules/${ruleId}`),
@@ -174,6 +176,8 @@ export const api = {
       getSigmaFields: (
         repositoryIds: Request.SigmaFieldsRequest,
       ): Promise<Response.SigmaFieldsResponse> => post('/get-sigma-fields', repositoryIds),
+      getMappingStatus: (jobId: string): Promise<Response.MappingStatusResponse> =>
+        get(`/generate-mapping/status/${jobId}`),
     },
     pipelineRuntime: {
       get: (): Promise<Response.IPipelineRuntimeResponse> => get('/settings/flink-defaults'),

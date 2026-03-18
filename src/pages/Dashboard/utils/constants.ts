@@ -1,5 +1,5 @@
 export const LAYOUT = {
-  maxVisibleTopics: 5,
+  maxVisibleNodes: 5,
   verticalSpacing: 48,
   edgeMargin: 48,
   groupSeparation: 100,

@@ -45,7 +45,10 @@ export const useRepositorySettingsDropdown = () => {
 
     return [
       {
-        label: currentRepository?.sync_enabled ? 'Turn Sync Off' : 'Turn Sync On',
+        label:
+          currentRepository?.sync_enabled && !isComingSoonRepository
+            ? 'Turn Sync Off'
+            : 'Turn Sync On',
         value: 'sync-toggle',
         disabled: isSyncDisabled,
       },

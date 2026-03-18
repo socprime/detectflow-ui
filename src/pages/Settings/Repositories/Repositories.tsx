@@ -1,5 +1,5 @@
 import { Button } from '@/components/Button';
-import { SearchInput } from '@/components/Form';
+import { SearchInputFields } from '@/components/Form';
 import { PageHeader } from '@/components/PageHeader';
 import { PaginationWrap } from '@/components/Pagination';
 import { TableWrap } from '@/components/Table';
@@ -9,11 +9,11 @@ import { PlusIcon, UploadIcon } from 'lucide-react';
 import React from 'react';
 import { columns } from './columns';
 import { CreateRepository, UploadRulesDialog } from './Dialogs';
+import { useRepositories } from './hooks/useRepositories';
 import { RepositoriesAside } from './RepositoriesAside';
 import { RepositoriesEmptyState } from './RepositoriesEmptyState';
 import { RepositorySettingsDropdown } from './RepositorySettingsDropdown';
 import { SyncProcessBar } from './SyncProcessBar';
-import { useRepositoriesTable } from './useRepositories';
 
 export const Repositories: React.FC = () => {
   const {
@@ -27,18 +27,23 @@ export const Repositories: React.FC = () => {
     isUploadDialogOpen,
     isCreateRepoDialogOpen,
     syncProcessing,
+    searchOptions,
     search,
+    searchFields,
     limit,
     setSearch,
+    onChangeSearchFields,
     setPage,
     setLimit,
     handleOpenUploadDialog,
     handleCloseUploadDialog,
     handleCloseCreateRepositoryDialog,
-  } = useRepositoriesTable();
+  } = useRepositories();
 
+  const isExternalRepository = repository?.type && repository.type === 'external';
   const isCloudRepository = repository?.type && repository.type !== 'local';
-  const syncStatusLabel = repository?.sync_enabled ? 'Sync On' : 'Sync Off';
+  const syncStatusLabel =
+    repository?.sync_enabled && !isExternalRepository ? 'Sync On' : 'Sync Off';
   const lastSyncLabel = repository?.updated ? formatDate(repository.updated) : '—';
   const headerDescription = isCloudRepository
     ? `${rules?.total} detection rules · ${syncStatusLabel} · ${lastSyncLabel}`
@@ -54,14 +59,17 @@ export const Repositories: React.FC = () => {
           descriptionSize="sm"
         >
           <>
-            <SearchInput
+            <SearchInputFields
               id="search-repositories"
               name="search-repositories"
-              className="w-64 text-xs"
+              className="w-88 text-xs"
               classNamesInput="h-10"
               value={search}
               onChange={setSearch}
               placeholder="Search rules…"
+              options={searchOptions}
+              valueSelect={searchFields[0] ?? ''}
+              onChangeSelect={onChangeSearchFields}
             />
             {repository?.id && repository?.type === 'local' && (
               <>

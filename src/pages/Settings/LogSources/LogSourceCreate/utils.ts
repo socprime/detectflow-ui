@@ -246,3 +246,15 @@ export const mapTopicEventsToResults = (events: TopicEvent[]): RunTransformTestR
     error_message: '',
   }));
 };
+
+export const parseData = (data: string) => {
+  try {
+    const parsed = JSON.parse(data);
+    if (typeof parsed === 'string') {
+      return parsed;
+    }
+    return JSON.stringify(parsed, null, 2);
+  } catch {
+    return data;
+  }
+};

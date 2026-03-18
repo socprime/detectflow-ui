@@ -47,7 +47,7 @@ export const SelectDefault = ({
           {options
             .filter((option) => option.value !== '')
             .map((option) => (
-              <SelectItem key={option.value} value={option.value}>
+              <SelectItem className="cursor-pointer" key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
             ))}

@@ -28,11 +28,11 @@ export const AIGenerateDialog: React.FC<AIGenerateDialogProps> = ({
   parsingScript = '',
 }) => {
   const {
-    isGenerating,
     isCopied,
     isShowAfterCopy,
     aiResponse,
-    loading,
+    loadingMapping,
+    loadingMappingPrompt,
     repositoryNames,
     handleGenerateWithUncoderAI,
     handleCopyPrompt,
@@ -77,9 +77,11 @@ export const AIGenerateDialog: React.FC<AIGenerateDialogProps> = ({
             <div className="text-subdued flex flex-col gap-4 text-xs font-normal">
               <div>
                 <span className="font-semibold">Cloud Version:</span> Automatically send fields
-                extracted and mapped from events in the source topics, together with unique fields
-                from Sigma rules in the selected repositories, to the Uncoder AI API to generate the
-                mapping.
+                extracted from events in the source topics, together with unique fields from Sigma
+                rules in the selected repositories, to the Uncoder Al API to generate the mapping
+                (make sure your SOC Prime Platform API key has{' '}
+                <span className="font-semibold">Uncoder AI</span> and{' '}
+                <span className="font-semibold">AI features</span> permissions).
               </div>
               <div>
                 <span className="font-semibold">On-Premise Version:</span> Copy the generated prompt
@@ -93,8 +95,8 @@ export const AIGenerateDialog: React.FC<AIGenerateDialogProps> = ({
               className="text-xs"
               type="button"
               onClick={handleGenerateWithUncoderAI}
-              disabled={isGenerating || loading}
-              loading={isGenerating || loading}
+              disabled={loadingMapping || loadingMappingPrompt}
+              loading={loadingMapping}
             >
               <SparklesIcon className="size-4" />
               Generate with Uncoder AI
@@ -104,7 +106,8 @@ export const AIGenerateDialog: React.FC<AIGenerateDialogProps> = ({
               className="text-xs"
               type="button"
               onClick={handleCopyPrompt}
-              disabled={isGenerating || loading}
+              disabled={loadingMapping || loadingMappingPrompt}
+              loading={loadingMappingPrompt}
             >
               {isCopied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
               {isCopied ? 'Copied!' : 'Copy Prompt'}
@@ -130,13 +133,7 @@ export const AIGenerateDialog: React.FC<AIGenerateDialogProps> = ({
           )}
         </div>
         <DialogFooter className="gap-2">
-          <Button
-            className="text-xs"
-            type="button"
-            onClick={onClose}
-            variant="secondaryOutline"
-            disabled={loading}
-          >
+          <Button className="text-xs" type="button" onClick={onClose} variant="secondaryOutline">
             Cancel
           </Button>
           <Button
@@ -144,8 +141,7 @@ export const AIGenerateDialog: React.FC<AIGenerateDialogProps> = ({
             type="button"
             onClick={handleApplyMapping}
             variant="primary"
-            disabled={loading || !aiResponse.trim()}
-            loading={loading}
+            disabled={loadingMapping || loadingMappingPrompt || !aiResponse.trim()}
           >
             <SparklesIcon className="size-4" />
             Apply Mapping

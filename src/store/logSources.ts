@@ -2,23 +2,17 @@ import { create } from 'zustand';
 import { api } from '../models/providers';
 import type {
   CreateLogSourceRequest,
-  GenerateMappingPromptRequest,
-  GenerateMappingRequest,
   PaginationParams,
   RunPreviewParseTestRequest,
   RunTransformTestRequest,
-  SigmaFieldsRequest,
   UpdateLogSourceRequest,
 } from '../models/providers/Types/Request';
 import type {
-  GenerateMappingPromptResponse,
-  GenerateMappingResponse,
   LogSource,
   LogSourceResponse,
   LogSourcesResponse,
   RunPreviewParseTestResponse,
   RunTransformTestResponse,
-  SigmaFieldsResponse,
   StatusResponse,
 } from '../models/providers/Types/Response';
 import { createBaseActions, handleAsyncAction } from './middleware';
@@ -30,15 +24,9 @@ interface LogSourcesState {
   logSource: LogSource | null;
   transformTestResult: RunTransformTestResponse | null;
   previewParseTestResult: RunPreviewParseTestResponse | null;
-  sigmaFields: SigmaFieldsResponse | null;
 
-  fetchSigmaFields: (params: SigmaFieldsRequest) => Promise<SigmaFieldsResponse>;
   runTransformTest: (data: RunTransformTestRequest) => Promise<RunTransformTestResponse>;
   runPreviewParseTest: (data: RunPreviewParseTestRequest) => Promise<RunPreviewParseTestResponse>;
-  generateMapping: (data: GenerateMappingRequest) => Promise<GenerateMappingResponse>;
-  generateMappingPrompt: (
-    data: GenerateMappingPromptRequest,
-  ) => Promise<GenerateMappingPromptResponse>;
   fetchLogSources: (params?: PaginationParams) => Promise<LogSourcesResponse>;
   fetchLogSourceById: (logSourceId: string) => Promise<LogSourceResponse>;
   createLogSource: (data: CreateLogSourceRequest) => Promise<StatusResponse>;
@@ -77,7 +65,6 @@ const initialState: Omit<
   logSource: null,
   transformTestResult: null,
   previewParseTestResult: null,
-  sigmaFields: null,
 };
 
 export const useLogSourcesStore = create<LogSourcesState>((set, get) => ({
@@ -92,17 +79,6 @@ export const useLogSourcesStore = create<LogSourcesState>((set, get) => ({
       },
       set,
       'Failed to fetch log sources',
-    ),
-
-  fetchSigmaFields: (params) =>
-    handleAsyncAction(
-      async () => {
-        const sigmaFields = await api.settings.mapping.getSigmaFields(params);
-        set({ sigmaFields });
-        return sigmaFields;
-      },
-      set,
-      'Failed to fetch sigma fields',
     ),
 
   runTransformTest: (data) =>
@@ -125,25 +101,6 @@ export const useLogSourcesStore = create<LogSourcesState>((set, get) => ({
       },
       set,
       'Failed to run preview parse test',
-    ),
-
-  generateMapping: (data) =>
-    handleAsyncAction(
-      async () => {
-        const result = await api.settings.mapping.generateMapping(data);
-        return result;
-      },
-      set,
-      'Failed to generate mapping',
-    ),
-  generateMappingPrompt: (data) =>
-    handleAsyncAction(
-      async () => {
-        const result = await api.settings.mapping.generateMappingPrompt(data);
-        return result;
-      },
-      set,
-      'Failed to generate mapping prompt',
     ),
 
   fetchLogSourceById: (logSourceId) =>

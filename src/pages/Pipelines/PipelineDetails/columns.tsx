@@ -7,11 +7,13 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { RuleDialogParams } from './usePipelineDetails';
 
 export const createColumns = (
+  checkboxLoading: boolean,
   onRuleClick: (params: RuleDialogParams) => void,
 ): ColumnDef<PipelineRule>[] => [
   {
     header: ({ table }) => (
       <Checkbox
+        disabled={checkboxLoading}
         checked={
           table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
         }

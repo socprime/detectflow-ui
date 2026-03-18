@@ -24,7 +24,6 @@ export const AnimatedEdge = ({
     targetPosition,
   });
   const { success } = useThemeColors();
-
   const color = (data?.color as string) || success;
   const particleCount = (data?.particleCount as number) || 2;
   const shape = data?.shape || 'circle';
@@ -34,19 +33,26 @@ export const AnimatedEdge = ({
   const disableAnimation = (data?.disableAnimation as boolean) || false;
   const hasCompletedInitialAnimation = useRef(false);
   const [visible, setVisible] = useState(() => {
-    if (!shouldAnimateOnMount) return true;
-    if (hasCompletedInitialAnimation.current) return true;
+    if (!shouldAnimateOnMount) {
+      return true;
+    }
+    if (hasCompletedInitialAnimation.current) {
+      return true;
+    }
     return false;
   });
 
   useEffect(() => {
-    if (visible || hasCompletedInitialAnimation.current) return;
-
+    if (visible || hasCompletedInitialAnimation.current) {
+      return;
+    }
     if (shouldAnimateOnMount) {
       const t = setTimeout(() => {
         setVisible(true);
       }, delay);
       return () => clearTimeout(t);
+    } else {
+      setVisible(true);
     }
   }, [delay, shouldAnimateOnMount, visible]);
 

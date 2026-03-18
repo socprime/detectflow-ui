@@ -43,29 +43,30 @@ export const Rule: React.FC<RuleProps> = ({ backLink = true, onClose }) => {
         <div className="flex items-center gap-2 max-lg:flex-wrap">
           {ruleDetails?.id && repositoryId && (
             <div className="flex items-center gap-2 max-lg:flex-wrap">
-              {ruleDetails?.repository_type !== 'local' && (
-                <Button
-                  loading={loading}
-                  size="l"
-                  className="gap-2 text-xs"
-                  variant="secondaryOutline"
-                  href={buildExternalUrl({
-                    path: '/uncoder-ai/translate/',
-                    queryParams: {
-                      open_code: true,
-                      siemType: 'sigma',
-                      rId: repositoryId,
-                      cId: ruleDetails.id,
-                      rType: 'custom',
-                    },
-                  })}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLinkIcon className="size-4" />
-                  Open in Uncoder AI
-                </Button>
-              )}
+              {ruleDetails?.repository_type !== 'local' &&
+                ruleDetails?.repository_type !== 'external' && (
+                  <Button
+                    loading={loading}
+                    size="l"
+                    className="gap-2 text-xs"
+                    variant="secondaryOutline"
+                    href={buildExternalUrl({
+                      path: '/uncoder-ai/translate/',
+                      queryParams: {
+                        open_code: true,
+                        siemType: 'sigma',
+                        rId: repositoryId,
+                        cId: ruleDetails.id,
+                        rType: 'custom',
+                      },
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLinkIcon className="size-4" />
+                    Open in Uncoder AI
+                  </Button>
+                )}
               <Button
                 loading={loading}
                 size="l"

@@ -125,20 +125,10 @@ VITE_PREVIEW_ALLOWED_HOSTS=example.com
 # Optional explicit environment (local | dev | prod)
 VITE_ENVIRONMENT_STAGE=local
 
-# SSE controls
-VITE_SSE_ENABLED=true
-VITE_SSE_RECONNECT=true
-VITE_SSE_RECONNECT_INTERVAL=3000
-VITE_SSE_RECONNECT_ATTEMPTS=10
-```
-
 ## Scripts
-
 - `yarn watch` / `npm run watch` - start dev server
 - `yarn build` / `npm run build` - build for production
 - `yarn prod` / `npm run prod` - preview production build
-- `yarn lint` / `npm run lint` - run ESLint
 
 ## License
-
 Licensed under the terms in `LICENSE`.

@@ -59,10 +59,10 @@ export const useNodeSelection = () => {
       if (!structure) return Array.from(dests);
 
       const visibleDestIds = new Set(
-        structure.destinationTopics.slice(0, LAYOUT.maxVisibleTopics).map((t) => `dest-${t.id}`),
+        structure.destinationTopics.slice(0, LAYOUT.maxVisibleNodes).map((t) => `dest-${t.id}`),
       );
       const hiddenDestIds = structure.destinationTopics
-        .slice(LAYOUT.maxVisibleTopics)
+        .slice(LAYOUT.maxVisibleNodes)
         .map((t) => `dest-${t.id}`);
 
       const result = new Set<string>();
@@ -101,10 +101,10 @@ export const useNodeSelection = () => {
       if (!structure) return Array.from(sources);
 
       const visibleSourceIds = new Set(
-        structure.sourceTopics.slice(0, LAYOUT.maxVisibleTopics).map((t) => `source-${t.id}`),
+        structure.sourceTopics.slice(0, LAYOUT.maxVisibleNodes).map((t) => `source-${t.id}`),
       );
       const hiddenSourceIds = structure.sourceTopics
-        .slice(LAYOUT.maxVisibleTopics)
+        .slice(LAYOUT.maxVisibleNodes)
         .map((t) => `source-${t.id}`);
 
       const result = new Set<string>();
@@ -143,10 +143,10 @@ export const useNodeSelection = () => {
       if (!structure) return Array.from(sources);
 
       const visibleSourceIds = new Set(
-        structure.sourceTopics.slice(0, LAYOUT.maxVisibleTopics).map((t) => `source-${t.id}`),
+        structure.sourceTopics.slice(0, LAYOUT.maxVisibleNodes).map((t) => `source-${t.id}`),
       );
       const hiddenSourceIds = structure.sourceTopics
-        .slice(LAYOUT.maxVisibleTopics)
+        .slice(LAYOUT.maxVisibleNodes)
         .map((t) => `source-${t.id}`);
 
       const result = new Set<string>();
@@ -185,10 +185,10 @@ export const useNodeSelection = () => {
       if (!structure) return Array.from(repos);
 
       const visibleRepoIds = new Set(
-        structure.repositories.slice(0, LAYOUT.maxVisibleTopics).map((r) => `repo-${r.id}`),
+        structure.repositories.slice(0, LAYOUT.maxVisibleNodes).map((r) => `repo-${r.id}`),
       );
       const hiddenRepoIds = structure.repositories
-        .slice(LAYOUT.maxVisibleTopics)
+        .slice(LAYOUT.maxVisibleNodes)
         .map((r) => `repo-${r.id}`);
 
       const result = new Set<string>();
@@ -227,10 +227,10 @@ export const useNodeSelection = () => {
       if (!structure) return Array.from(repos);
 
       const visibleRepoIds = new Set(
-        structure.repositories.slice(0, LAYOUT.maxVisibleTopics).map((r) => `repo-${r.id}`),
+        structure.repositories.slice(0, LAYOUT.maxVisibleNodes).map((r) => `repo-${r.id}`),
       );
       const hiddenRepoIds = structure.repositories
-        .slice(LAYOUT.maxVisibleTopics)
+        .slice(LAYOUT.maxVisibleNodes)
         .map((r) => `repo-${r.id}`);
 
       const result = new Set<string>();
@@ -269,10 +269,10 @@ export const useNodeSelection = () => {
       if (!structure) return Array.from(sources);
 
       const visibleSourceIds = new Set(
-        structure.sourceTopics.slice(0, LAYOUT.maxVisibleTopics).map((t) => `source-${t.id}`),
+        structure.sourceTopics.slice(0, LAYOUT.maxVisibleNodes).map((t) => `source-${t.id}`),
       );
       const hiddenSourceIds = structure.sourceTopics
-        .slice(LAYOUT.maxVisibleTopics)
+        .slice(LAYOUT.maxVisibleNodes)
         .map((t) => `source-${t.id}`);
 
       const result = new Set<string>();
@@ -309,10 +309,10 @@ export const useNodeSelection = () => {
       if (!structure) return Array.from(destinations);
 
       const visibleDestIds = new Set(
-        structure.destinationTopics.slice(0, LAYOUT.maxVisibleTopics).map((t) => `dest-${t.id}`),
+        structure.destinationTopics.slice(0, LAYOUT.maxVisibleNodes).map((t) => `dest-${t.id}`),
       );
       const hiddenDestIds = structure.destinationTopics
-        .slice(LAYOUT.maxVisibleTopics)
+        .slice(LAYOUT.maxVisibleNodes)
         .map((t) => `dest-${t.id}`);
 
       const result = new Set<string>();
@@ -419,7 +419,7 @@ export const useNodeSelection = () => {
     }
 
     const hiddenSourceIds = structure.sourceTopics
-      .slice(LAYOUT.maxVisibleTopics)
+      .slice(LAYOUT.maxVisibleNodes)
       .map((topic) => topic.id);
     const destinations = getDestinationsForSources(hiddenSourceIds);
     const repos = getRepositoriesForSources(hiddenSourceIds);
@@ -449,7 +449,7 @@ export const useNodeSelection = () => {
     }
 
     const hiddenDestIds = structure.destinationTopics
-      .slice(LAYOUT.maxVisibleTopics)
+      .slice(LAYOUT.maxVisibleNodes)
       .map((topic) => topic.id);
     const sources = getSourcesForDestinations(hiddenDestIds);
     const repos = getRepositoriesForDestinations(hiddenDestIds);

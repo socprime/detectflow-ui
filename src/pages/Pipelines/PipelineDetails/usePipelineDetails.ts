@@ -19,6 +19,7 @@ export const usePipelineDetails = () => {
   const ruleIdFromUrl = searchParams.get('ruleId');
   const {
     loading,
+    loadingRules,
     pipeline,
     pipelineRules,
     fetchPipelineById,
@@ -32,6 +33,7 @@ export const usePipelineDetails = () => {
   const { sorting, handleSortingChange } = useSorting({ setPage });
   const taggedFilterFromUrl = searchParams.get('tagged_filter');
   const [hideUnmatchedRules, setHideUnmatchedRules] = useState(taggedFilterFromUrl === 'tagged');
+  const [checkboxLoading, setCheckboxLoading] = useState(false);
 
   const rules = useMemo(() => pipelineRules?.data || [], [pipelineRules]);
   const total = useMemo(() => pipelineRules?.total || 0, [pipelineRules?.total]);
@@ -73,36 +75,36 @@ export const usePipelineDetails = () => {
         return;
       }
 
+      setCheckboxLoading(true);
+
       try {
         const promises = selectedRuleIds.map((ruleId) =>
-          updatePipelineRule(pipelineId, ruleId, status),
+          updatePipelineRule(pipelineId, ruleId, status, false),
         );
         await Promise.all(promises);
 
         toast.success(
           `Successfully ${status === 'enable' ? 'activated' : 'deactivated'} ${selectedRuleIds.length} rule${selectedRuleIds.length > 1 ? 's' : ''}`,
         );
-        fetchPipelineRules(pipelineId, params);
         fetchPipelineById(pipelineId);
+        fetchPipelineRules(pipelineId, params, false);
         setRowSelection({});
       } catch (error) {
         toast.error(`Failed to ${status === 'enable' ? 'activate' : 'deactivate'} rules`);
         console.error('Failed to update rules:', error);
+      } finally {
+        setCheckboxLoading(false);
       }
     },
-    [
-      pipelineId,
-      selectedRuleIds,
-      updatePipelineRule,
-      params,
-      fetchPipelineRules,
-      fetchPipelineById,
-    ],
+    [selectedRuleIds],
   );
 
   useEffect(() => {
-    if (pipelineId) {
+    let isActvie = true;
+
+    if (pipelineId && isActvie && params) {
       fetchPipelineRules(pipelineId, params);
+      isActvie = false;
     }
   }, [pipelineId, params]);
 
@@ -139,8 +141,8 @@ export const usePipelineDetails = () => {
   );
 
   const columns = useMemo(
-    () => createColumns(handleOpenRuleDialogWithId),
-    [handleOpenRuleDialogWithId],
+    () => createColumns(checkboxLoading, handleOpenRuleDialogWithId),
+    [checkboxLoading, handleOpenRuleDialogWithId],
   );
 
   const table = useReactTable({
@@ -159,7 +161,9 @@ export const usePipelineDetails = () => {
 
   return {
     loading,
+    loadingRules,
     isRuleDialogOpen,
+    checkboxLoading,
     rules,
     pipeline,
     selectedRules: selectedRuleIds,

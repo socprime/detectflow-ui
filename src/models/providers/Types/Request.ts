@@ -67,10 +67,20 @@ export interface UpdateRepositoryApiKeyRequest {
 export interface RulesRequest extends PaginationParams {
   repository_id?: string;
   search?: string;
+  search_fields?: string[];
 }
 
 export interface CreateRuleRequest extends DefaultBody {}
 export interface UpdateRuleRequest extends DefaultBody {}
+
+export interface BulkCreateRuleItem {
+  name: string;
+  body: string;
+}
+
+export interface BulkCreateRulesRequest {
+  rules: BulkCreateRuleItem[];
+}
 
 export interface RunParserRequest {
   parser_query: string;
@@ -148,7 +158,4 @@ export interface UpdatePipelineRuntimeRequest {
   taskmanager_cpu: number;
   window_size_sec: number;
   checkpoint_interval_sec: number;
-  autoscaler_enabled: boolean;
-  autoscaler_min_parallelism: number;
-  autoscaler_max_parallelism: number;
 }

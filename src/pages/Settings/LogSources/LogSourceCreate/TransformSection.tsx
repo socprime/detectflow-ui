@@ -11,8 +11,8 @@ import { Tooltip } from '@/components/Tooltip';
 import type { TopicEvent } from '@/models/providers';
 import { PlayIcon } from 'lucide-react';
 import { Controller, type Control, type FieldErrors } from 'react-hook-form';
-import type { LogSourceBoolState, LogSourceFormData } from './hooks/useLogSourceCreate';
 import { TestResult } from './TestResult/TestResult';
+import type { LogSourceBoolState, LogSourceFormData } from './useLogSourceCreate';
 import { mapTopicEventsToResults, parseTestResult } from './utils';
 
 interface TransformSectionProps {

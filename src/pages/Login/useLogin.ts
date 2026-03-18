@@ -74,8 +74,7 @@ export const useLogin = () => {
         toast.success('Successfully logged in');
       }
     } catch {
-      toast.error('Failed to login');
-      console.error('Failed to login', error);
+      // error is handled via useAuthStore error state -> useEffect above
     } finally {
       isLoggingIn.current = false;
       setIsSubmitting(false);
