@@ -247,7 +247,15 @@ export const mapTopicEventsToResults = (events: TopicEvent[]): RunTransformTestR
   }));
 };
 
-export const parseData = (data: string) => {
+export const parseData = (data: unknown): string => {
+  if (data === null || data === undefined) {
+    return '';
+  }
+
+  if (typeof data !== 'string') {
+    return JSON.stringify(data, null, 2);
+  }
+
   try {
     const parsed = JSON.parse(data);
     if (typeof parsed === 'string') {

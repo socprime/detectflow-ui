@@ -173,10 +173,12 @@ export const usePipelineCreate = () => {
       }
 
       navigate(routes.pipelines, { replace: true });
-    } catch (error) {
+    } catch (error: any) {
+      const msg = error?.data?.detail?.[0]?.msg ?? error?.message ?? '';
       const errorMessage = isEditMode ? 'Failed to update pipeline' : 'Failed to create pipeline';
-      toast.error(errorMessage);
-      console.error('Failed to save pipeline:', error);
+
+      toast.error(msg ?? errorMessage);
+      console.error(msg ?? errorMessage);
     }
   };
 

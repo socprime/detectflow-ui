@@ -26,9 +26,14 @@ export const TestResult: React.FC<TestResultProps> = ({ parsed }) => {
       <ScrollArea orientation="vertical" className="h-full w-full flex-1">
         {parsed?.map((item, index) =>
           item.success ? (
-            <TestResultItemDefault item={item} index={index} onlyRead={!item?.parsed_data} />
+            <TestResultItemDefault
+              key={`${item.source_data}-${index}`}
+              item={item}
+              index={index}
+              onlyRead={!item?.parsed_data}
+            />
           ) : (
-            <TestResultItemError item={item} index={index} />
+            <TestResultItemError key={`${item.source_data}-${index}`} item={item} index={index} />
           ),
         )}
       </ScrollArea>

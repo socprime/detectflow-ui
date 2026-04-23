@@ -15,13 +15,7 @@
     "baseUrl": ".",
     "typeRoots": ["node_modules/@types", "./src/types"],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/store/*": ["./src/store/*"],
-      "@/utils/*": ["./src/utils/*"],
-      "@/models/*": ["./src/models/*"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/assets/*": ["./src/assets/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src", "src/@types/vite-env.d.ts"],

@@ -14,7 +14,7 @@ import {
 import { useArchiveProcessing } from './useArchiveProcessing';
 import { useFileList } from './useFileList';
 
-const BULK_BATCH_SIZE = 250;
+const BULK_BATCH_SIZE = 200;
 const MAX_UPLOAD_RULES = 5000;
 const UPLOAD_MAX_RETRIES = 3;
 const SEQUENTIAL_CONCURRENCY = 10;
@@ -259,14 +259,15 @@ export const useUploadRules = (repositoryId: string | undefined, onClose: () => 
             const result = await createRulesBulk(repositoryId, {
               rules: batch.map((f) => ({ name: getRuleName(f), body: f.content })),
             });
-            successCount += result.created;
-            errorCount += result.failed.length;
-            errors.push(...result.failed.map((f) => f.error));
+            successCount += result.total;
             completedCount += batch.length;
             updateProgress();
             return;
           } catch (error) {
-            if (error instanceof ApiError && (error.status === 404 || error.status === 405)) {
+            if (
+              error instanceof ApiError &&
+              (error.status === 404 || error.status === 405 || error.status === 422)
+            ) {
               bulkNotSupportedRef.current = true;
               return uploadSequentially(batch);
             }

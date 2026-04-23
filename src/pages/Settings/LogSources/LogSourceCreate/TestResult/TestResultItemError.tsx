@@ -10,11 +10,7 @@ interface TestResultItemErrorProps {
 
 export const TestResultItemError = ({ item, index }: TestResultItemErrorProps) => {
   return (
-    <AccordionItem
-      key={`${item.source_data}-${index}`}
-      value={`item-${index}`}
-      className="min-w-0 overflow-hidden"
-    >
+    <AccordionItem className="min-w-0 overflow-hidden" value={`item-${index}`}>
       <AccordionTrigger
         chevronPosition={undefined}
         chevronClassName="[&_svg]:rotate-[0deg]"

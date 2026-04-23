@@ -22,6 +22,7 @@ export const routes = {
   settingsAuditLogs: '/settings/audit-logs',
   settingsUserManagement: '/settings/user-management',
   settingsPipelineRuntime: '/settings/pipeline-runtime',
+  settingsSystemStatus: '/settings/system-status',
   create: '/create',
   login: '/login',
   changePassword: '/change-password',
