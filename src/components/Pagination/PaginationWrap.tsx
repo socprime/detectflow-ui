@@ -97,8 +97,8 @@ export const PaginationWrap: React.FC<PaginationWrapProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center justify-between gap-4 xl:flex-nowrap">
+      <div className="order-2 flex items-center gap-2 xl:order-1">
         <div className="text-gray-chateau hidden text-xs whitespace-nowrap lg:flex">
           Items per page:
         </div>
@@ -110,7 +110,7 @@ export const PaginationWrap: React.FC<PaginationWrapProps> = ({
           onChange={limitItemChange}
         />
       </div>
-      <Pagination>
+      <Pagination className="order-1 xl:order-2">
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
@@ -141,7 +141,7 @@ export const PaginationWrap: React.FC<PaginationWrapProps> = ({
           </PaginationItem>
         </PaginationContent>
       </Pagination>
-      <div className="flex items-center gap-2">
+      <div className="order-3 flex items-center gap-3 xl:order-2">
         <div className="text-gray-chateau hidden text-xs whitespace-nowrap lg:flex">Go to:</div>
         <Input
           className="h-8 w-13 px-2 text-xs"

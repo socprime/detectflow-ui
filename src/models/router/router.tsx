@@ -56,6 +56,9 @@ const UserManagement = lazy(() =>
 const PipelineRuntime = lazy(() =>
   import('@/pages/Settings/PipelineRuntime').then((m) => ({ default: m.PipelineRuntime })),
 );
+const SystemStatus = lazy(() =>
+  import('@/pages/Settings/SystemStatus').then((m) => ({ default: m.SystemStatus })),
+);
 const LazyWrapper = ({ children }: { children: ReactNode }) => (
   <Suspense fallback={<SpinnerSquare />}>{children}</Suspense>
 );
@@ -174,6 +177,10 @@ export const router = createBrowserRouter([
           {
             path: routes.settingsPipelineRuntime,
             element: <LazyWrapper children={<PipelineRuntime />} />,
+          },
+          {
+            path: routes.settingsSystemStatus,
+            element: <LazyWrapper children={<SystemStatus />} />,
           },
         ],
       },

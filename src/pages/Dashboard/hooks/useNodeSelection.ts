@@ -52,6 +52,7 @@ export const useNodeSelection = () => {
 
       pipelines.forEach((pipeline) => {
         if (pipeline.source_topics.some((sourceId) => sourceSet.has(normalizeSourceId(sourceId)))) {
+          dests.add(`dest-${pipeline.destination_topic}`);
           dests.add(`dest-${normalizeDestinationId(pipeline.destination_topic)}`);
         }
       });
@@ -129,11 +130,14 @@ export const useNodeSelection = () => {
 
   const getSourcesForDestinations = useCallback(
     (destinationIds: string[]) => {
-      const destSet = new Set(destinationIds.map(normalizeDestinationId));
+      const destSet = new Set(destinationIds);
       const sources = new Set<string>();
 
       pipelines.forEach((pipeline) => {
-        if (destSet.has(normalizeDestinationId(pipeline.destination_topic))) {
+        if (
+          destSet.has(pipeline.destination_topic) ||
+          destSet.has(normalizeDestinationId(pipeline.destination_topic))
+        ) {
           pipeline.source_topics.forEach((sourceId) => {
             sources.add(`source-${normalizeSourceId(sourceId)}`);
           });
@@ -213,11 +217,14 @@ export const useNodeSelection = () => {
 
   const getRepositoriesForDestinations = useCallback(
     (destinationIds: string[]) => {
-      const destSet = new Set(destinationIds.map(normalizeDestinationId));
+      const destSet = new Set(destinationIds);
       const repos = new Set<string>();
 
       pipelines.forEach((pipeline) => {
-        if (destSet.has(normalizeDestinationId(pipeline.destination_topic))) {
+        if (
+          destSet.has(pipeline.destination_topic) ||
+          destSet.has(normalizeDestinationId(pipeline.destination_topic))
+        ) {
           (pipeline.repository_ids ?? []).forEach((repoId) => {
             repos.add(`repo-${normalizeRepositoryId(repoId)}`);
           });
@@ -302,6 +309,7 @@ export const useNodeSelection = () => {
 
       pipelines.forEach((pipeline) => {
         if ((pipeline.repository_ids ?? []).some((id) => repoSet.has(normalizeRepositoryId(id)))) {
+          destinations.add(`dest-${pipeline.destination_topic}`);
           destinations.add(`dest-${normalizeDestinationId(pipeline.destination_topic)}`);
         }
       });

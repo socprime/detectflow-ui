@@ -1,3 +1,5 @@
+import { SystemStatus } from '@/enums';
+
 export type { DashboardSnapshotResponse } from '@/config/types';
 
 export interface RepoSyncStatus {
@@ -340,14 +342,16 @@ export interface Rule {
 
 export interface RulesResponse extends PaginatedResponse<Rule> {}
 
-export interface BulkCreateRuleFailure {
+export interface BulkCreatedRule {
+  id: string;
   name: string;
-  error: string;
+  is_supported: boolean;
 }
 
 export interface BulkCreateRulesResponse {
-  created: number;
-  failed: BulkCreateRuleFailure[];
+  total: number;
+  supported: number;
+  data: BulkCreatedRule[];
 }
 
 export interface RuleDetailsResponse {
@@ -468,4 +472,42 @@ export interface PipelineRuntimeSchemaResponse {
   parameters: FlinkDefaultsParameters[];
   categories: FlinkDefaultsCategories;
   impact_descriptions: FlinkDefaultsImpactDescriptions;
+}
+
+export interface HealthCheckCheck {
+  status: SystemStatus;
+  title: string;
+  descriptions: string[];
+  updated: string;
+}
+
+export interface HealthCheckPlatforms {
+  name: string;
+  checks: HealthCheckCheck[];
+}
+
+export interface HealthCheckResponse {
+  platforms: HealthCheckPlatforms[];
+  versions: HealthCheckVersionResponse;
+}
+
+export interface HealthCheckVersionResponse {
+  detectflow_backend_version: string;
+  match_node: {
+    [key: string]: string;
+  };
+}
+
+export interface VersionResponse {
+  status: string;
+  detectflow_backend_version: string;
+  services: Record<string, boolean>;
+  database_pool: {
+    pool_size: number;
+    max_overflow: number;
+    checked_out: number;
+    checked_in: number;
+    total: number;
+    overflow_current: number;
+  };
 }

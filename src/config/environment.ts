@@ -1,5 +1,7 @@
 export type Environment = 'local' | 'dev' | 'prod';
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+
 const ALLOWED_DOMAINS: Record<Environment, readonly string[]> = {
   local: ['tdm.socprime.com'],
   dev: ['tdm.socprime.com'],

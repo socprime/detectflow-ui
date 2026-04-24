@@ -8,7 +8,7 @@ export const PipelineRuntime = () => {
     usePipelineRuntime();
 
   return (
-    <section className="flex w-full flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <PageHeader
         loading={loading}
         title="Pipeline Runtime"
@@ -33,6 +33,6 @@ export const PipelineRuntime = () => {
           </Button>
         </div>
       </form>
-    </section>
+    </div>
   );
 };

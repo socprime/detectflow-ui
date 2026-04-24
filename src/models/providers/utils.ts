@@ -1,8 +1,7 @@
+import { API_BASE_URL } from '@/config/environment';
 import { useAuthStore } from '@/store/auth';
 import { ApiError } from './ApiError';
 import { isLoginEndpoint, isLogoutEndpoint, isRefreshEndpoint } from './constants';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 const REFRESH_MAX_RETRIES = 1;
 const REFRESH_RETRY_DELAY_MS = 1000;
@@ -68,20 +67,23 @@ async function extractErrorData(response: Response): Promise<ApiError> {
   return new ApiError(response.status, response.statusText, errorData);
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+type RequestOptions = RequestInit & { baseUrl?: string };
+
+async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+  const { baseUrl = API_BASE_URL, ...fetchOptions } = options;
+  const url = `${baseUrl}${endpoint}`;
   const accessToken = getAccessToken();
   const defaultCredentials: RequestCredentials = 'include';
-  const credentials = options.credentials ?? defaultCredentials;
+  const credentials = fetchOptions.credentials ?? defaultCredentials;
 
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
       ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      ...options.headers,
+      ...fetchOptions.headers,
     },
     ...(credentials && { credentials }),
-    ...options,
+    ...fetchOptions,
   };
 
   try {
@@ -169,6 +171,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
 }
 
 export const get = <T>(endpoint: string): Promise<T> => request<T>(endpoint);
+export const getRoot = <T>(endpoint: string): Promise<T> => request<T>(endpoint, { baseUrl: '' });
 export const post = <T>(endpoint: string, data?: unknown): Promise<T> =>
   request<T>(endpoint, {
     method: 'POST',

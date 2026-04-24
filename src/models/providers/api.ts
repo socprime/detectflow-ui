@@ -3,7 +3,7 @@ import type * as Response from './Types/Response';
 
 import { buildQueryString } from '@/utils/queryParams';
 import { AUTH_PATHS } from './constants';
-import { del, get, patch, post, put } from './utils';
+import { del, get, getRoot, patch, post, put } from './utils';
 
 export const api = {
   auth: {
@@ -185,6 +185,11 @@ export const api = {
         put('/settings/flink-defaults', data),
       getSchema: (): Promise<Response.PipelineRuntimeSchemaResponse> =>
         get('/settings/flink-defaults/schema'),
+    },
+    healthCheck: {
+      getVersion: (): Promise<Response.VersionResponse> => getRoot('/health'),
+      getAll: (): Promise<Response.HealthCheckResponse> => get('/health_check/all'),
+      checkNowAll: (): Promise<Response.HealthCheckResponse> => get('/health_check/check_now/all'),
     },
   },
 };

@@ -33,7 +33,9 @@ export const PipelinesNode = memo(() => {
     if (selectedNode.type === 'destination') {
       const selectedDestinationId = normalizeDestinationId(selectedNode.id);
       return pipelineStatistics.filter(
-        (pipeline) => normalizeDestinationId(pipeline.destination_topic) === selectedDestinationId,
+        (pipeline) =>
+          pipeline.destination_topic === selectedDestinationId ||
+          normalizeDestinationId(pipeline.destination_topic) === selectedDestinationId,
       ).length;
     }
 
@@ -62,11 +64,11 @@ export const PipelinesNode = memo(() => {
       const hiddenDestinationIds = new Set(
         structure.destinationTopics
           .slice(LAYOUT.maxVisibleNodes)
-          .map((topic) => normalizeDestinationId(topic.id)),
+          .flatMap((topic) => [topic.id, normalizeDestinationId(topic.id)]),
       );
 
       return pipelineStatistics.filter((pipeline) =>
-        hiddenDestinationIds.has(normalizeDestinationId(pipeline.destination_topic)),
+        hiddenDestinationIds.has(pipeline.destination_topic),
       ).length;
     }
 

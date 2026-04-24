@@ -15,11 +15,7 @@ export const TestResultItemDefault = ({
   onlyRead = false,
 }: TestResultItemDefaultProps) => {
   return (
-    <AccordionItem
-      key={`${item.source_data}-${index}`}
-      value={`item-${index}`}
-      className="min-w-0 overflow-hidden"
-    >
+    <AccordionItem className="min-w-0 overflow-hidden" value={`item-${index}`}>
       <AccordionTrigger
         chevronPosition={onlyRead ? undefined : 'left'}
         chevronClassName="[&_svg]:rotate-[-90deg]"
@@ -39,9 +35,7 @@ export const TestResultItemDefault = ({
             {Object.entries(item?.parsed_data || {})?.map(([key, value]) => (
               <div key={key} className="flex gap-2 break-words">
                 <span className="text-gray-chateau text-2xs min-w-25 font-medium">{key}:</span>
-                <span className="text-subdued text-2xs break-all">
-                  {parseData(value as string)}
-                </span>
+                <span className="text-subdued text-2xs break-all">{parseData(value)}</span>
               </div>
             ))}
           </div>

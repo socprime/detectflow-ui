@@ -19,6 +19,8 @@ interface DefaultDialogProps {
   confirmText?: React.ReactNode;
   cancelText?: React.ReactNode;
   className?: string;
+  classNameHeader?: string;
+  classNameTitle?: string;
   hideFooter?: boolean;
   scrollable?: boolean;
   scrollAreaClassName?: string;
@@ -37,6 +39,8 @@ export const DefaultDialog: React.FC<DefaultDialogProps> = ({
   children,
   loading = false,
   className,
+  classNameHeader,
+  classNameTitle,
   hideFooter = true,
   scrollable = false,
   scrollAreaClassName = '',
@@ -60,8 +64,8 @@ export const DefaultDialog: React.FC<DefaultDialogProps> = ({
         )}
         hideCloseButton
       >
-        <DialogHeader className={scrollable ? 'shrink-0' : ''}>
-          <DialogTitle className="text-default">{title}</DialogTitle>
+        <DialogHeader className={cn(scrollable ? 'shrink-0' : '', classNameHeader)}>
+          <DialogTitle className={cn('text-default', classNameTitle)}>{title}</DialogTitle>
           <DialogDescription className="sr-only">{titleDescription}</DialogDescription>
         </DialogHeader>
         <Button className="absolute top-6 right-4" variant="icon" size="xxs" onClick={onClose}>
