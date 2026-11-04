@@ -129,6 +129,6 @@ VITE_ENVIRONMENT_STAGE=local
 - `yarn watch` / `npm run watch` - start dev server
 - `yarn build` / `npm run build` - build for production
 - `yarn prod` / `npm run prod` - preview production build
-
+```
 ## License
-Licensed under the terms in `LICENSE`.
+Apache License 2.0, see [LICENSE](LICENSE).
