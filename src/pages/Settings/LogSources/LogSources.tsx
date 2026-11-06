@@ -1,14 +1,11 @@
-import { Button } from '@/components/Button';
-import { ConditionalContent } from '@/components/ConditionalContent';
-import { SearchInput } from '@/components/Form/SearchInput';
-import { Skeleton } from '@/components/Loading/Skeleton';
-import { PageHeader } from '@/components/PageHeader';
-import { routes } from '@/models/router';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
 import { LogSourcesCard } from './LogSourcesCard';
 import { LogSourcesEmptyState } from './LogSourcesEmptyState';
 import { useLogSources } from './useLogSources';
+
+import { routes } from '@/models/router';
+import { Button, ConditionalContent, PageHeader, SearchInput, Skeleton } from '@socprime/react-ui';
 
 export const LogSources: React.FC = () => {
   const { loading, search, logSources, setSearch } = useLogSources();

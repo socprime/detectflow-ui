@@ -1,6 +1,7 @@
-import { PageHeader } from '@/components/PageHeader';
 import { AccountForm } from './AccountForm';
 import { ChangePasswordForm } from './ChangePasswordForm';
+
+import { PageHeader } from '@socprime/react-ui';
 
 export const Account = () => {
   return (

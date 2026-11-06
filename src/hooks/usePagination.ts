@@ -1,6 +1,7 @@
-import { getQueryParamNumber, updateQueryParams } from '@/utils';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+
+import { getQueryParamNumber, updateQueryParams } from '@/utils';
 
 export interface UsePaginationOptions {
   defaultPage?: number;
@@ -42,12 +43,12 @@ export const usePagination = (options: UsePaginationOptions = {}): UsePagination
   }, [onPageChange, onLimitChange]);
 
   const page = useMemo(
-    () => getQueryParamNumber(searchParams, pageParamName, defaultPage),
+    () => getQueryParamNumber(searchParams, pageParamName, undefined, defaultPage),
     [searchParams, pageParamName, defaultPage],
   );
 
   const limit = useMemo(
-    () => getQueryParamNumber(searchParams, limitParamName, defaultLimit),
+    () => getQueryParamNumber(searchParams, limitParamName, undefined, defaultLimit),
     [searchParams, limitParamName, defaultLimit],
   );
 

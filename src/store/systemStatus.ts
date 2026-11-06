@@ -1,11 +1,11 @@
-import { create } from 'zustand';
-import { api } from '../models/providers';
+import { api } from '@/models/providers';
 import type {
   HealthCheckPlatforms,
   HealthCheckResponse,
   HealthCheckVersionResponse,
-} from '../models/providers/Types/Response';
-import { createBaseActions, handleAsyncAction } from './middleware';
+} from '@/models/providers/Types/responses/healthCheck';
+import { createBaseActions, handleAsyncAction } from '@/store/middleware';
+import { create } from 'zustand';
 
 interface SystemStatusState {
   loading: boolean;

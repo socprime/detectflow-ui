@@ -1,0 +1,1 @@
+export { SigmaRuleTable } from './SigmaRuleTable';

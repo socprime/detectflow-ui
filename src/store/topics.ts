@@ -1,7 +1,8 @@
+import { api } from '@/models/providers';
+import type { PaginationParams } from '@/models/providers/Types/Request';
+import type { Topic, TopicEvent, TopicsResponse } from '@/models/providers/Types/responses/topics';
+import { createBaseActions, handleAsyncAction } from '@/store/middleware';
 import { create } from 'zustand';
-import { api, PaginationParams } from '../models/providers';
-import type { Topic, TopicEvent, TopicsResponse } from '../models/providers/Types/Response';
-import { createBaseActions, handleAsyncAction } from './middleware';
 
 interface TopicsState {
   loading: boolean;

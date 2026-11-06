@@ -1,13 +1,14 @@
+import { LogOut, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useUserMenu } from './useUserMenu';
+
+import { routes } from '@/models/router/routes';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/Dropdowns';
-import { routes } from '@/models/router/routes';
-import { LogOut, Settings } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useUserMenu } from './useUserMenu';
+} from '@socprime/react-ui';
 
 export const UserMenu: React.FC = () => {
   const { initials, handleLogout } = useUserMenu();

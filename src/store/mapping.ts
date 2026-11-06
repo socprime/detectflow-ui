@@ -1,17 +1,17 @@
-import { create } from 'zustand';
-import { api } from '../models/providers';
+import { api } from '@/models/providers';
 import type {
   GenerateMappingPromptRequest,
   GenerateMappingRequest,
   SigmaFieldsRequest,
-} from '../models/providers/Types/Request';
+} from '@/models/providers/Types/Request';
 import type {
   GenerateMappingPromptResponse,
   GenerateMappingResponse,
   MappingStatusResponse,
   SigmaFieldsResponse,
-} from '../models/providers/Types/Response';
-import { createBaseActions, handleAsyncAction } from './middleware';
+} from '@/models/providers/Types/responses/mapping';
+import { createBaseActions, handleAsyncAction } from '@/store/middleware';
+import { create } from 'zustand';
 
 interface MappingState {
   loading: boolean;
@@ -66,14 +66,14 @@ export const useMappingStore = create<MappingState>((set) => ({
 
   generateMapping: (data) =>
     handleAsyncAction(
-      async () => await api.settings.mapping.generateMapping(data),
+      async () => api.settings.mapping.generateMapping(data),
       set,
       'Failed to generate mapping',
     ),
 
   generateMappingPrompt: (data) =>
     handleAsyncAction(
-      async () => await api.settings.mapping.generateMappingPrompt(data),
+      async () => api.settings.mapping.generateMappingPrompt(data),
       set,
       'Failed to generate mapping prompt',
       true,
@@ -82,7 +82,7 @@ export const useMappingStore = create<MappingState>((set) => ({
 
   getMappingStatus: (jobId) =>
     handleAsyncAction(
-      async () => await api.settings.mapping.getMappingStatus(jobId),
+      async () => api.settings.mapping.getMappingStatus(jobId),
       set,
       'Failed to get mapping status',
     ),

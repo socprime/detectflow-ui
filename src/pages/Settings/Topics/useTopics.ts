@@ -1,9 +1,11 @@
-import { usePagination, useSearch } from '@/hooks';
-import { useTopicsStore } from '@/store/topics';
+import { toast } from '@/utils/toast';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useCallback, useEffect, useMemo } from 'react';
-import { toast } from 'sonner';
 import { columns } from './columns';
+
+import { usePagination, useSearch } from '@/hooks';
+import { OrderBy } from '@/models/providers';
+import { useTopicsStore } from '@/store/topics';
 
 export const useTopics = () => {
   const loading = useTopicsStore((state) => state.loading);
@@ -26,7 +28,7 @@ export const useTopics = () => {
       limit,
       search: debouncedSearch || undefined,
       sort: 'created',
-      order: 'desc' as const,
+      order: OrderBy.DESC,
     };
   }, [page, limit, debouncedSearch]);
 

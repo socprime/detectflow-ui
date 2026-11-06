@@ -1,8 +1,9 @@
-import { api } from '@/models/providers/api';
-import { ApiError } from '@/models/providers/ApiError';
-import type { UserInfo } from '@/models/providers/Types/Response';
 import { create } from 'zustand';
 import { broadcastLogin, broadcastLogout } from './authSync';
+
+import { api } from '@/models/providers/api';
+import { ApiError } from '@/models/providers/ApiError';
+import type { UserInfo } from '@/models/providers/Types/responses/auth';
 
 const AUTH_SESSION_HINT_KEY = 'auth_session_hint';
 const REFRESH_BUFFER_MS = 30_000;
@@ -241,7 +242,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   setMustChangePassword: (value: boolean) => {
-    const user = get().user;
+    const { user } = get();
     set({
       mustChangePassword: value,
       ...(user && { user: { ...user, must_change_password: value } }),

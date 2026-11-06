@@ -1,18 +1,18 @@
-import { create } from 'zustand';
-import { api } from '../models/providers/';
+import { api } from '@/models/providers';
 import type {
   CreatePipelineRequest,
   PaginationParams,
   UpdatePipelineRequest,
-} from '../models/providers/Types/Request';
+} from '@/models/providers/Types/Request';
+import type { StatusResponse } from '@/models/providers/Types/responses/common';
+import type { PipelineStatisticsResponse } from '@/models/providers/Types/responses/dashboard';
 import type {
   PipelineResponse,
   PipelineRulesResponse,
   PipelinesResponse,
-  PipelineStatisticsResponse,
-  StatusResponse,
-} from '../models/providers/Types/Response';
-import { createBaseActions, handleAsyncAction } from './middleware';
+} from '@/models/providers/Types/responses/pipelines';
+import { createBaseActions, handleAsyncAction } from '@/store/middleware';
+import { create } from 'zustand';
 
 interface PipelinesState {
   loading: boolean;
@@ -37,6 +37,7 @@ interface PipelinesState {
     withLoading?: boolean,
   ) => Promise<StatusResponse>;
   deletePipeline: (pipelineId: string) => Promise<StatusResponse>;
+  duplicatePipeline: (pipelineId: string) => Promise<StatusResponse>;
   updatePipelineRule: (
     pipelineId: string,
     ruleId: string,
@@ -54,6 +55,7 @@ const initialState: Omit<
   | 'createPipeline'
   | 'updatePipeline'
   | 'deletePipeline'
+  | 'duplicatePipeline'
   | 'fetchPipelineRules'
   | 'updatePipelineRule'
   | 'clearError'
@@ -104,15 +106,11 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
     ),
 
   createPipeline: async (data) =>
-    handleAsyncAction(
-      async () => await api.pipelines.create(data),
-      set,
-      'Failed to create pipeline',
-    ),
+    handleAsyncAction(async () => api.pipelines.create(data), set, 'Failed to create pipeline'),
 
   updatePipeline: async (pipelineId, data, withLoading = true) =>
     handleAsyncAction(
-      async () => await api.pipelines.update(pipelineId, data),
+      async () => api.pipelines.update(pipelineId, data),
       set,
       'Failed to update pipeline',
       withLoading,
@@ -120,9 +118,16 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
 
   deletePipeline: async (pipelineId) =>
     handleAsyncAction(
-      async () => await api.pipelines.delete(pipelineId),
+      async () => api.pipelines.delete(pipelineId),
       set,
       'Failed to delete pipeline',
+    ),
+
+  duplicatePipeline: async (pipelineId) =>
+    handleAsyncAction(
+      async () => api.pipelines.duplicate(pipelineId),
+      set,
+      'Failed to duplicate pipeline',
     ),
 
   fetchPipelineRules: async (pipelineId, params, withLoading = true) =>
@@ -140,7 +145,7 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
 
   updatePipelineRule: async (pipelineId, ruleId, status, withLoading = true) =>
     handleAsyncAction(
-      async () => await api.pipelines.updateRuleStatus(pipelineId, ruleId, status),
+      async () => api.pipelines.updateRuleStatus(pipelineId, ruleId, status),
       set,
       'Failed to update pipeline rule',
       withLoading,

@@ -1,6 +1,9 @@
-import { Button } from '@/components/Button';
-import { ChangePasswordFields } from '@/components/Form';
 import { useChangePasswordForm } from './useChangePasswordForm';
+
+import { ChangePasswordFields } from '@/components/Form/ChangePasswordFields';
+import { DisabledTooltip } from '@/components/Tooltip/DisabledTooltip';
+import { usePermissions } from '@/hooks';
+import { Button } from '@socprime/react-ui';
 
 export const ChangePasswordForm = () => {
   const {
@@ -12,6 +15,7 @@ export const ChangePasswordForm = () => {
     watch,
     handleChangePasswordFormSubmit,
   } = useChangePasswordForm();
+  const { isViewer } = usePermissions();
 
   return (
     <form
@@ -30,15 +34,17 @@ export const ChangePasswordForm = () => {
       />
       <ChangePasswordFields register={register} errors={errors} watch={watch} showAriaInvalid />
       <div>
-        <Button
-          className="text-xs"
-          variant="primary"
-          type="submit"
-          disabled={loading || !isDirty}
-          loading={loading}
-        >
-          Change Password
-        </Button>
+        <DisabledTooltip disabled={isViewer}>
+          <Button
+            className="text-xs"
+            variant="primary"
+            type="submit"
+            disabled={isViewer || loading || !isDirty}
+            loading={loading}
+          >
+            Change Password
+          </Button>
+        </DisabledTooltip>
       </div>
     </form>
   );

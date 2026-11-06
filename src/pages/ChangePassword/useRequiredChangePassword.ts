@@ -1,11 +1,12 @@
+import { toast } from '@/utils/toast';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+
 import { api } from '@/models/providers/api';
 import { ApiError } from '@/models/providers/ApiError';
 import { routes } from '@/models/router/routes';
 import { useAuthStore } from '@/store/auth';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 
 interface ChangePasswordForm {
   current_password: string;
@@ -40,7 +41,7 @@ export const useRequiredChangePassword = () => {
     if (!isAuthenticated) {
       navigate(routes.login, { replace: true });
     } else if (!mustChangePassword) {
-      navigate(routes.dashboard, { replace: true });
+      navigate(routes.pipelines, { replace: true });
     }
   }, [isInitialized, ensureInitialized, isAuthenticated, mustChangePassword, navigate]);
 
@@ -55,7 +56,7 @@ export const useRequiredChangePassword = () => {
 
       setMustChangePassword(false);
       toast.success('Password changed successfully!');
-      navigate(routes.dashboard, { replace: true });
+      navigate(routes.pipelines, { replace: true });
     } catch (error) {
       const errorMessage =
         error instanceof ApiError ? error.message : 'Failed to change password. Please try again.';

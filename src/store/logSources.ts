@@ -1,21 +1,21 @@
-import { create } from 'zustand';
-import { api } from '../models/providers';
+import { api } from '@/models/providers';
 import type {
   CreateLogSourceRequest,
   PaginationParams,
   RunPreviewParseTestRequest,
   RunTransformTestRequest,
   UpdateLogSourceRequest,
-} from '../models/providers/Types/Request';
+} from '@/models/providers/Types/Request';
+import type { StatusResponse } from '@/models/providers/Types/responses/common';
 import type {
   LogSource,
   LogSourceResponse,
   LogSourcesResponse,
   RunPreviewParseTestResponse,
   RunTransformTestResponse,
-  StatusResponse,
-} from '../models/providers/Types/Response';
-import { createBaseActions, handleAsyncAction } from './middleware';
+} from '@/models/providers/Types/responses/logSources';
+import { createBaseActions, handleAsyncAction } from '@/store/middleware';
+import { create } from 'zustand';
 
 interface LogSourcesState {
   loading: boolean;
@@ -116,21 +116,21 @@ export const useLogSourcesStore = create<LogSourcesState>((set, get) => ({
 
   createLogSource: (data) =>
     handleAsyncAction(
-      async () => await api.settings.logSources.create(data),
+      async () => api.settings.logSources.create(data),
       set,
       'Failed to create log source',
     ),
 
   updateLogSource: (logSourceId, data) =>
     handleAsyncAction(
-      async () => await api.settings.logSources.update(logSourceId, data),
+      async () => api.settings.logSources.update(logSourceId, data),
       set,
       'Failed to update log source',
     ),
 
   deleteLogSource: (logSourceId) =>
     handleAsyncAction(
-      async () => await api.settings.logSources.delete(logSourceId),
+      async () => api.settings.logSources.delete(logSourceId),
       set,
       'Failed to delete log source',
     ),

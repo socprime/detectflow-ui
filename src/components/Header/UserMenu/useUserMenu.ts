@@ -1,7 +1,8 @@
+import { toast } from '@/utils';
+import { useNavigate } from 'react-router-dom';
+
 import { routes } from '@/models/router/routes';
 import { useAuthStore } from '@/store/auth';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 
 export const useUserMenu = () => {
   const { logout, user } = useAuthStore();
@@ -14,7 +15,7 @@ export const useUserMenu = () => {
       toast.success('Successfully logged out');
     } catch (error) {
       console.error('Logout error:', error);
-      toast.error('Failed to logout');
+      toast.error('Failed to logged out');
     }
   };
 

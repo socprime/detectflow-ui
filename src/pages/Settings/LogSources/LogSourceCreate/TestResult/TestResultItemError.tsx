@@ -1,7 +1,7 @@
-import { AccordionItem, AccordionTrigger } from '@/components/Accordion';
-import { TextTruncate } from '@/components/TextTruncate';
-import { RunTransformTestResult } from '@/models/providers';
 import { InfoIcon } from 'lucide-react';
+
+import { type RunTransformTestResult } from '@/models/providers';
+import { AccordionItem, AccordionTrigger, TextTruncate } from '@socprime/react-ui';
 
 interface TestResultItemErrorProps {
   item: RunTransformTestResult;
@@ -12,9 +12,8 @@ export const TestResultItemError = ({ item, index }: TestResultItemErrorProps) =
   return (
     <AccordionItem className="min-w-0 overflow-hidden" value={`item-${index}`}>
       <AccordionTrigger
-        chevronPosition={undefined}
-        chevronClassName="[&_svg]:rotate-[0deg]"
-        className="border-border text-subdued hover:bg-hover text-2xs relative min-w-0 overflow-hidden border-b text-left font-medium [&[data-state=open]>svg]:rotate-[0deg]"
+        chevronVariant="none"
+        className="border-border text-subdued hover:bg-hover text-2xs relative min-w-0 overflow-hidden border-b text-left font-medium"
       >
         <InfoIcon className="text-critical-light no-rotate size-4" />
         <TextTruncate className="w-0 min-w-0 flex-1" showCopy showToggle>

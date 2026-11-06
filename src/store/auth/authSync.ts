@@ -1,5 +1,6 @@
-import type { UserInfo } from '@/models/providers/Types/Response';
 import { resetAuthState, scheduleTokenRefresh, useAuthStore } from './auth';
+
+import type { UserInfo } from '@/models/providers/Types/responses/auth';
 
 const CHANNEL_NAME = 'auth_channel';
 let broadcastChannel: BroadcastChannel | null = null;

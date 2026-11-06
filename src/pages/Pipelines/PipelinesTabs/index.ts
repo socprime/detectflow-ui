@@ -1,0 +1,1 @@
+export { PipelinesTabs } from './PipelinesTabs';

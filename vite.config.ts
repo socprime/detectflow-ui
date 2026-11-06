@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
       exclude: ['@monaco-editor/react'],
     },
     build: {
-      outDir: 'build',
+      outDir: 'app/build',
       commonjsOptions: {
         include: [/node_modules/],
         transformMixedEsModules: true,

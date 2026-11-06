@@ -1,9 +1,10 @@
-import { routes } from '@/models/router/routes';
-import { useAuthStore } from '@/store/auth';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+
+import { routes } from '@/models/router/routes';
+import { useAuthStore } from '@/store/auth';
+import { toast } from '@/utils';
 
 interface LoginForm {
   email: string;
@@ -40,10 +41,10 @@ export const useLogin = () => {
     const from = (location.state as { from?: { pathname: string; search?: string; hash?: string } })
       ?.from;
 
-    if (!from?.pathname) return routes.dashboard;
+    if (!from?.pathname) return routes.pipelines;
 
     const path = `${from.pathname}${from.search || ''}${from.hash || ''}`;
-    if (!path.startsWith('/') || path.startsWith('//')) return routes.dashboard;
+    if (!path.startsWith('/') || path.startsWith('//')) return routes.pipelines;
 
     return path;
   };

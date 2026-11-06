@@ -1,4 +1,4 @@
-import { RepositoryType } from '@/models/providers/Types/Response';
+import { RepositoryType } from '@/models/providers/Types/responses/repositories';
 
 interface GetColorClassForRepositoryTypeProps {
   type?: RepositoryType;

@@ -1,7 +1,7 @@
-import { routes } from '@/models/router/routes';
+import type { LucideIcon } from 'lucide-react';
 import {
   ActivityIcon,
-  Database,
+  CableIcon,
   FileText,
   Filter,
   FolderTree,
@@ -10,11 +10,19 @@ import {
   UsersIcon,
 } from 'lucide-react';
 
-export const tabs = [
+import { routes } from '@/models/router/routes';
+
+export interface SettingsTab {
+  id: string;
+  title?: string;
+  label?: string;
+  icon?: LucideIcon;
+}
+
+export const settingsTabs: SettingsTab[] = [
   {
-    id: routes.settingsRepositories,
-    label: 'Repositories',
-    icon: Database,
+    id: 'pipelines',
+    title: 'Pipelines',
   },
   {
     id: routes.settingsTopics,
@@ -27,9 +35,27 @@ export const tabs = [
     icon: Server,
   },
   {
+    id: routes.settingsPipelineRuntime,
+    label: 'Pipeline Runtime',
+    icon: GaugeIcon,
+  },
+  {
+    id: 'configuration',
+    title: 'Configuration',
+  },
+  {
+    id: routes.settingsIntegrations,
+    label: 'Integrations',
+    icon: CableIcon,
+  },
+  {
     id: routes.settingsFilters,
     label: 'Filters',
     icon: Filter,
+  },
+  {
+    id: 'administration',
+    title: 'Administration',
   },
   {
     id: routes.settingsUserManagement,
@@ -40,11 +66,6 @@ export const tabs = [
     id: routes.settingsAuditLogs,
     label: 'Audit Logs',
     icon: FileText,
-  },
-  {
-    id: routes.settingsPipelineRuntime,
-    label: 'Pipeline Runtime',
-    icon: GaugeIcon,
   },
   {
     id: routes.settingsSystemStatus,

@@ -1,6 +1,8 @@
-import { useSearch } from '@/hooks';
-import { useLogSourcesStore } from '@/store/logSources';
 import { useEffect, useMemo } from 'react';
+
+import { useSearch } from '@/hooks';
+import { OrderBy } from '@/models/providers';
+import { useLogSourcesStore } from '@/store/logSources';
 
 export const useLogSources = () => {
   const { loading, logSources: logSourcesList, fetchLogSources } = useLogSourcesStore();
@@ -15,7 +17,7 @@ export const useLogSources = () => {
       limit: 100,
       search: debouncedSearch || undefined,
       sort: 'created',
-      order: 'desc',
+      order: OrderBy.DESC,
     });
   }, [debouncedSearch, fetchLogSources]);
 

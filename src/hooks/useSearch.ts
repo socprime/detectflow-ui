@@ -1,6 +1,7 @@
-import { getQueryParam, updateQueryParams } from '@/utils';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+
+import { getQueryParam, updateQueryParams } from '@/utils';
 
 export interface UseSearchOptions {
   defaultSearch?: string;
@@ -77,28 +78,26 @@ export const useSearch = (options: UseSearchOptions = {}) => {
   const searchFieldsKey = searchFields.join(',');
 
   useEffect(() => {
+    const currentUrlSearch = searchParams.get(searchParamName) || '';
+    const currentUrlFields = searchParams.get(searchFieldsParamName) || '';
+    const fieldsValue = searchFieldsRef.current.join(',');
+
+    if (debouncedSearch === currentUrlSearch && fieldsValue === currentUrlFields) {
+      return;
+    }
+
     isUpdatingUrlRef.current = true;
 
     setSearchParams(
-      (prev) => {
-        const currentUrlSearch = prev.get(searchParamName) || '';
-        const currentUrlFields = prev.get(searchFieldsParamName) || '';
-        const fieldsValue = searchFieldsRef.current.join(',');
-
-        if (debouncedSearch === currentUrlSearch && fieldsValue === currentUrlFields) {
-          isUpdatingUrlRef.current = false;
-          return prev;
-        }
-
-        return updateQueryParams(
+      (prev) =>
+        updateQueryParams(
           prev,
           {
             [searchParamName]: debouncedSearch || null,
             [searchFieldsParamName]: fieldsValue || null,
           },
           resetPageOnChange ? { resetPage: true, pageParamName } : {},
-        );
-      },
+        ),
       { replace: true },
     );
 
@@ -113,7 +112,6 @@ export const useSearch = (options: UseSearchOptions = {}) => {
     return () => {
       clearTimeout(timeoutId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     debouncedSearch,
     searchFieldsKey,
@@ -121,6 +119,7 @@ export const useSearch = (options: UseSearchOptions = {}) => {
     searchFieldsParamName,
     pageParamName,
     resetPageOnChange,
+    searchParams,
     setSearchParams,
   ]);
 

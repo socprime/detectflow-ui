@@ -1,7 +1,7 @@
-import { Badge, BadgeProps } from '@/components/Badge/Badge';
-
-import type { Topic, TopicPipeline } from '@/models/providers/Types/Response';
 import type { ColumnDef } from '@tanstack/react-table';
+
+import type { Topic, TopicPipeline } from '@/models/providers/Types/responses/topics';
+import { Badge, BadgeProps } from '@socprime/react-ui';
 
 type PipelineConfig = {
   variant: BadgeProps['variant'];
@@ -41,7 +41,7 @@ export const columns: ColumnDef<Topic>[] = [
     header: 'Pipeline',
     accessorKey: 'pipelines',
     cell: ({ row }) => {
-      const pipelines = row.original.pipelines;
+      const { pipelines } = row.original;
 
       if (!pipelines?.length) {
         return <span className="text-gray-chateau text-xs">-</span>;

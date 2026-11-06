@@ -1,19 +1,20 @@
-import { MultiSelectOption } from '@/components/Form';
+import { toast } from '@/utils/toast';
+import { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
+import { mergeMappings } from './utils';
+
 import { CreateLogSourceRequest } from '@/models/providers/Types/Request';
 import {
   LogSource,
   RunPreviewParseTestResponse,
   RunTransformTestResponse,
-} from '@/models/providers/Types/Response';
+} from '@/models/providers/Types/responses/logSources';
+import type { RepositoriesData } from '@/models/providers/Types/responses/repositories';
 import { routes } from '@/models/router';
 import { useMappingStore, useRepositoriesStore } from '@/store';
 import { useLogSourcesStore } from '@/store/logSources';
 import { useTopicsStore } from '@/store/topics';
-import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { toast } from 'sonner';
-import { mergeMappings } from './utils';
 
 export interface LogSourceFormData extends CreateLogSourceRequest {
   transform_test_result: string;
@@ -58,8 +59,7 @@ const initialBoolState: LogSourceBoolState = {
 
 export const useLogSourceCreate = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const logSourceId = searchParams.get('logSourceId') || '';
+  const { logSourceId = '' } = useParams<{ logSourceId: string }>();
   const {
     loading,
     logSource,
@@ -81,15 +81,8 @@ export const useLogSourceCreate = () => {
     return allTopics?.map((topic) => ({ label: topic.name, value: topic.name })) || [];
   }, [allTopics]);
 
-  const repositoryOptions: MultiSelectOption[] = useMemo(() => {
-    return (
-      repositories?.data?.map((repository) => ({
-        label: repository.name,
-        value: repository.id,
-        type: repository.type,
-        typeDisplay: repository.type_display,
-      })) || []
-    );
+  const repositoriesList: RepositoriesData[] = useMemo(() => {
+    return repositories?.data || [];
   }, [repositories]);
 
   useEffect(() => {
@@ -133,11 +126,9 @@ export const useLogSourceCreate = () => {
       if (isCreateMode) {
         await createLogSource(params);
         toast.success('Log source created successfully');
-      } else {
-        if (logSourceId) {
-          await updateLogSource(logSourceId, params);
-          toast.success('Log source updated successfully');
-        }
+      } else if (logSourceId) {
+        await updateLogSource(logSourceId, params);
+        toast.success('Log source updated successfully');
       }
       navigate(routes.settingsLogSources, { replace: true });
     } catch (error) {
@@ -165,7 +156,7 @@ export const useLogSourceCreate = () => {
       setBoolState((prev) => ({ ...prev, isTopicEventsShow: false }));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error('Failed to run transform test: ' + errorMessage);
+      toast.error(`Failed to run transform test: ${errorMessage}`);
       console.error('Failed to run transform test:', error);
     } finally {
       setBoolState((prev) => ({ ...prev, isRunningTransformTest: false }));
@@ -242,9 +233,9 @@ export const useLogSourceCreate = () => {
     const currentMapping = getValues('mapping') || '';
     const mergedMapping = mergeMappings(currentMapping, mapping, true);
     if (replace) {
-      setValue('mapping', mapping);
+      setValue('mapping', mapping, { shouldDirty: true });
     } else {
-      setValue('mapping', mergedMapping);
+      setValue('mapping', mergedMapping, { shouldDirty: true });
     }
     toast.success('Mapping applied successfully');
   };
@@ -264,9 +255,14 @@ export const useLogSourceCreate = () => {
         toast.info('No fields found in repositories');
         return;
       }
-      const sigmaMapping = repositoryMapping.sigma_fields.map((field) => `${field}:`).join('\n');
+      const sigmaFields = [
+        '_detect_flow_hostname_fields',
+        '_detect_flow_timestamp_fields',
+        ...(repositoryMapping.sigma_fields ?? []),
+      ];
+      const sigmaMapping = sigmaFields.map((field) => `${field}:`).join('\n');
       const mergedMapping = mergeMappings(values.mapping || '', sigmaMapping, false);
-      setValue('mapping', mergedMapping);
+      setValue('mapping', mergedMapping, { shouldDirty: true });
       toast.success('Repository fields added successfully');
     } catch (error) {
       toast.error('Failed to fetch repository fields');
@@ -312,7 +308,7 @@ export const useLogSourceCreate = () => {
     logSource,
     topicEvents,
     sourceTopicOptions,
-    repositoryOptions,
+    repositoriesList,
     control,
     handleRunTransformTest,
     handleRunDirectTest,

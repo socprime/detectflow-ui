@@ -18,16 +18,20 @@ const monthNames = [
 export const parseDate = (date: string | Date | number): Date | null => {
   try {
     const dateObj = date instanceof Date ? date : new Date(date);
-    return isNaN(dateObj.getTime()) ? null : dateObj;
+    return Number.isNaN(dateObj.getTime()) ? null : dateObj;
   } catch {
     return null;
   }
 };
 
 export const formatDate = (
-  date: string | Date | number,
+  date?: string | Date | number | null,
   format: DateFormat = 'datetime',
 ): string => {
+  if (date == null || date === '') {
+    return '';
+  }
+
   const dateObj = parseDate(date);
 
   if (!dateObj) {
@@ -54,8 +58,8 @@ export const formatDate = (
       const dayNum = dateObj.getDate();
       let hours12 = dateObj.getHours();
       const ampm = hours12 >= 12 ? 'PM' : 'AM';
-      hours12 = hours12 % 12;
-      hours12 = hours12 ? hours12 : 12;
+      hours12 %= 12;
+      hours12 = hours12 || 12;
       const minutesStr = String(dateObj.getMinutes()).padStart(2, '0');
       return `${monthName} ${dayNum}, ${hours12}:${minutesStr} ${ampm}`;
     }
@@ -106,10 +110,27 @@ export const formatBytes = (bytes: number, decimals: number = 2): string => {
 
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`;
 };
 
 export const truncate = (text: string, maxLength: number, suffix: string = '...'): string => {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength - suffix.length) + suffix;
+};
+
+export const formatCorrelationWindow = (seconds: number): string => {
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  const parts: string[] = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+  if (remainingSeconds > 0 && hours === 0) parts.push(`${remainingSeconds}s`);
+
+  return parts.join(' ') || '0s';
 };

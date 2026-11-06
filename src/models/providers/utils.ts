@@ -1,7 +1,8 @@
-import { API_BASE_URL } from '@/config/environment';
-import { useAuthStore } from '@/store/auth';
 import { ApiError } from './ApiError';
 import { isLoginEndpoint, isLogoutEndpoint, isRefreshEndpoint } from './constants';
+
+import { API_BASE_URL } from '@/config/environment';
+import { useAuthStore } from '@/store/auth';
 
 const REFRESH_MAX_RETRIES = 1;
 const REFRESH_RETRY_DELAY_MS = 1000;
@@ -16,7 +17,10 @@ const setAccessToken = (token: string): void => {
 
 let refreshPromise: Promise<string> | null = null;
 
-const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 async function refreshAccessToken(): Promise<string> {
   if (refreshPromise) {

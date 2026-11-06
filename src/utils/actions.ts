@@ -1,4 +1,4 @@
-import { ActionLog } from '@/models/providers/Types/Response';
+import { ActionLog } from '@/models/providers/Types/responses/common';
 
 export const getActionVariant = (action: ActionLog) => {
   switch (action) {

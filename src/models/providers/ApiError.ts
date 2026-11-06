@@ -9,16 +9,25 @@ export class ApiError extends Error {
     let message = `API Error: ${status} ${statusText}`;
 
     if (status === 504) {
-      message =
-        'Server is not responding in time. Check if the backend server is running and available';
+      message = 'Server is not responding in time. Check if the backend server is running';
     } else if (status === 503) {
       message = 'Service is temporarily unavailable. Please try again later.';
     } else if (status === 502) {
       message = 'Gateway error. The backend server is not responding.';
     } else if (status === 500) {
-      if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
+      if (
+        data &&
+        typeof data === 'object' &&
+        'message' in data &&
+        typeof data.message === 'string'
+      ) {
         message = data.message;
-      } else if (data && typeof data === 'object' && 'detail' in data && typeof data.detail === 'string') {
+      } else if (
+        data &&
+        typeof data === 'object' &&
+        'detail' in data &&
+        typeof data.detail === 'string'
+      ) {
         message = data.detail;
       } else if (data && typeof data === 'string' && data.trim() && !data.trim().startsWith('<')) {
         message = data.trim();

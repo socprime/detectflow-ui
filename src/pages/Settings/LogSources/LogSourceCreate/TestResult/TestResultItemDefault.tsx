@@ -1,7 +1,12 @@
-import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/Accordion';
-import { TextTruncate } from '@/components/TextTruncate';
-import { RunTransformTestResult } from '@/models/providers';
 import { parseData } from '../utils';
+
+import { type RunTransformTestResult } from '@/models/providers';
+import {
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  TextTruncate,
+} from '@socprime/react-ui';
 
 interface TestResultItemDefaultProps {
   item: RunTransformTestResult;
@@ -18,8 +23,8 @@ export const TestResultItemDefault = ({
     <AccordionItem className="min-w-0 overflow-hidden" value={`item-${index}`}>
       <AccordionTrigger
         chevronPosition={onlyRead ? undefined : 'left'}
-        chevronClassName="[&_svg]:rotate-[-90deg]"
-        className="border-border text-subdued hover:bg-hover text-2xs relative min-w-0 overflow-hidden border-b text-left font-medium [&[data-state=open]>svg]:rotate-[0deg]"
+        chevronVariant={onlyRead ? 'none' : 'section'}
+        className="border-border text-subdued hover:bg-hover text-2xs relative min-w-0 overflow-hidden border-b text-left font-medium"
       >
         <TextTruncate
           className="w-0 min-w-0 flex-1"

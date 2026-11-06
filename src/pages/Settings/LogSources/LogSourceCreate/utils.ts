@@ -1,8 +1,9 @@
-import { RunTransformTestResult, TopicEvent } from '@/models/providers';
+import type { RunTransformTestResult } from '@/models/providers/Types/responses/logSources';
+import type { TopicEvent } from '@/models/providers/Types/responses/topics';
 
 export const normalizeLineEndings = (value: string) => value.replace(/\r\n/g, '\n');
 
-const VALID_FIELD_KEY_REGEX = /^[a-zA-Z_][a-zA-Z0-9_.\-]*$/;
+const VALID_FIELD_KEY_REGEX = /^[a-zA-Z_][a-zA-Z0-9_.-]*$/;
 
 const isValidFieldKey = (key: string): boolean => {
   return VALID_FIELD_KEY_REGEX.test(key);
@@ -19,6 +20,42 @@ interface MappingField {
   key: string;
   value: string | string[] | null;
 }
+
+export const DETECT_FLOW_HOSTNAME_FIELDS_KEY = '_detect_flow_hostname_fields';
+export const DETECT_FLOW_TIMESTAMP_FIELDS_KEY = '_detect_flow_timestamp_fields';
+
+const parseBracketArrayScalar = (value: string): string[] | null => {
+  const trimmed = value.trim();
+  if (!trimmed.startsWith('[') || !trimmed.endsWith(']')) {
+    return null;
+  }
+  const inner = trimmed.slice(1, -1).trim();
+  if (!inner) {
+    return [];
+  }
+  return inner
+    .split(',')
+    .map((item) => item.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean);
+};
+
+export const parseDetectFlowArrayField = (mapping: string, key: string): string[] => {
+  const matchingFields = parseMappingFields(mapping).filter((item) => item.key === key);
+  const field = matchingFields.at(-1);
+  if (!field?.value) {
+    return [];
+  }
+  if (Array.isArray(field.value)) {
+    return field.value.map((item) => item.trim()).filter(Boolean);
+  }
+  const scalar = String(field.value).trim();
+  if (!scalar) {
+    return [];
+  }
+  return parseBracketArrayScalar(scalar) ?? [scalar];
+};
+
+export const formatDetectFlowFieldsDisplay = (fields: string[]): string => fields.join(', ');
 
 export const parseMappingFields = (mapping: string): MappingField[] => {
   const lines = normalizeLineEndings(mapping || '').split('\n');
@@ -60,8 +97,17 @@ export const parseMappingFields = (mapping: string): MappingField[] => {
         };
       }
     } else if (currentField) {
-      const arrayItemMatch = line.match(/^\s+-\s*(.*)$/);
+      const arrayItemMatch = line.match(/^\s*-\s+(.*)$/);
       if (arrayItemMatch) {
+        const hasInlineScalar =
+          currentField.value !== null &&
+          currentField.value !== '' &&
+          !Array.isArray(currentField.value);
+
+        if (hasInlineScalar) {
+          continue;
+        }
+
         const itemValue = arrayItemMatch[1].trim();
         if (!Array.isArray(currentField.value)) {
           currentField.value = [];

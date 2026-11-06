@@ -1,11 +1,10 @@
-import { Button } from '@/components/Button';
-import { SearchInput } from '@/components/Form/SearchInput';
-import { PageHeader } from '@/components/PageHeader';
-import { PaginationWrap } from '@/components/Pagination';
-import { TableWrap } from '@/components/Table';
 import { RefreshCwIcon } from 'lucide-react';
 import React, { memo } from 'react';
 import { useTopics } from './useTopics';
+
+import { DisabledTooltip } from '@/components/Tooltip/DisabledTooltip';
+import { usePermissions } from '@/hooks/usePermissions';
+import { Button, PageHeader, PaginationWrap, SearchInput, TableWrap } from '@socprime/react-ui';
 
 export const Topics: React.FC = memo(() => {
   const {
@@ -23,6 +22,8 @@ export const Topics: React.FC = memo(() => {
     handleSyncTopics,
   } = useTopics();
 
+  const { isViewer } = usePermissions();
+
   return (
     <section className="flex w-full flex-col gap-6">
       <PageHeader title="Topics" description="Manage Kafka topics for pipeline configuration">
@@ -36,16 +37,19 @@ export const Topics: React.FC = memo(() => {
             onChange={setSearch}
             placeholder="Search topics..."
           />
-          <Button
-            className="text-xs"
-            size="l"
-            variant="secondaryOutline"
-            onClick={handleSyncTopics}
-            loading={loading}
-          >
-            <RefreshCwIcon className="size-4" />
-            Sync Topics
-          </Button>
+          <DisabledTooltip disabled={isViewer}>
+            <Button
+              className="text-xs"
+              size="l"
+              variant="secondaryOutline"
+              onClick={handleSyncTopics}
+              loading={loading}
+              disabled={isViewer}
+            >
+              <RefreshCwIcon className="size-4" />
+              Sync Topics
+            </Button>
+          </DisabledTooltip>
         </>
       </PageHeader>
       <TableWrap table={table} columns={columns} loading={loading} data={topicsData} />

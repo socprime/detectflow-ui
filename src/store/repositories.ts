@@ -1,24 +1,21 @@
-import { create } from 'zustand';
-import { api } from '../models/providers';
+import { api } from '@/models/providers';
 import type {
   AddExternalRepositoriesRequest,
-  AddSocprimeRepositoriesRequest,
   CreateRepositoryRequest,
   PaginationParams,
-  UpdateRepositoryApiKeyRequest,
   UpdateRepositoryRequest,
-} from '../models/providers/Types/Request';
+} from '@/models/providers/Types/Request';
+import type { StatusResponse } from '@/models/providers/Types/responses/common';
 import type {
   CombinedAvailableRepository,
   CreateRepositoryResponse,
   RepositoriesData,
   RepositoriesResponse,
   RepositoryDetailResponse,
-  RepositorySettings,
-  StatusResponse,
   SyncStatusResponse,
-} from '../models/providers/Types/Response';
-import { createBaseActions, handleAsyncAction } from './middleware';
+} from '@/models/providers/Types/responses/repositories';
+import { createBaseActions, handleAsyncAction } from '@/store/middleware';
+import { create } from 'zustand';
 
 interface GroupedAvailableRepositories {
   api: CombinedAvailableRepository[];
@@ -29,16 +26,15 @@ interface GroupedAvailableRepositories {
 interface RepositoriesState {
   loading: boolean;
   error: string | null;
+  repositoriesLoaded: boolean;
   repositories: RepositoriesResponse | null;
   repositoryDetails: RepositoryDetailResponse | null;
-  repositorySettings: RepositorySettings | null;
   availableRepositories: CombinedAvailableRepository[] | null;
   activeRepositoryId: string;
   syncProcessing: boolean;
 
   fetchRepositories: (params?: PaginationParams) => Promise<RepositoriesResponse>;
   fetchRepositoryById: (repositoryId: string) => Promise<RepositoryDetailResponse>;
-  fetchRepositorySettings: () => Promise<RepositorySettings>;
   fetchAvailableRepositories: () => Promise<CombinedAvailableRepository[]>;
   fetchSyncStatus: () => Promise<SyncStatusResponse>;
   updateRepository: (
@@ -46,11 +42,9 @@ interface RepositoriesState {
     data: UpdateRepositoryRequest,
   ) => Promise<StatusResponse>;
   createRepository: (data: CreateRepositoryRequest) => Promise<CreateRepositoryResponse>;
-  addSocprimeRepositories: (data: AddSocprimeRepositoriesRequest) => Promise<StatusResponse>;
   addExternalRepositories: (data: AddExternalRepositoriesRequest) => Promise<StatusResponse>;
   deleteRepository: (repositoryId: string) => Promise<StatusResponse>;
   syncRepositories: () => Promise<StatusResponse>;
-  updateRepositoryApiKey: (data: UpdateRepositoryApiKeyRequest) => Promise<StatusResponse>;
   setActiveRepositoryId: (repositoryId: string) => void;
   getRepositoryById: (repositoryId: string | null | undefined) => RepositoriesData | null;
   getGroupedAvailableRepositories: () => GroupedAvailableRepositories;
@@ -64,14 +58,11 @@ const initialState: Omit<
   RepositoriesState,
   | 'fetchRepositories'
   | 'fetchRepositoryById'
-  | 'fetchRepositorySettings'
   | 'fetchAvailableRepositories'
   | 'fetchSyncStatus'
   | 'updateRepository'
-  | 'addSocprimeRepositories'
   | 'addExternalRepositories'
   | 'syncRepositories'
-  | 'updateRepositoryApiKey'
   | 'createRepository'
   | 'deleteRepository'
   | 'setActiveRepositoryId'
@@ -84,6 +75,7 @@ const initialState: Omit<
 > = {
   loading: false,
   error: '',
+  repositoriesLoaded: false,
   repositories: {
     data: [],
     total: 0,
@@ -94,7 +86,6 @@ const initialState: Omit<
     page: 1,
   },
   repositoryDetails: null,
-  repositorySettings: null,
   availableRepositories: null,
   activeRepositoryId: 'all',
   syncProcessing: false,
@@ -106,8 +97,12 @@ export const useRepositoriesStore = create<RepositoriesState>((set, get) => ({
   fetchRepositories: (params) =>
     handleAsyncAction(
       async () => {
-        const repositories = await api.settings.repositories.getList(params);
-        set({ repositories });
+        const repositories = await api.repositories.getList({
+          limit: 500,
+          sort: 'type',
+          ...params,
+        });
+        set({ repositories, repositoriesLoaded: true });
         return repositories;
       },
       set,
@@ -117,7 +112,7 @@ export const useRepositoriesStore = create<RepositoriesState>((set, get) => ({
   fetchRepositoryById: (repositoryId) =>
     handleAsyncAction(
       async () => {
-        const repositoryDetails = await api.settings.repositories.getById(repositoryId);
+        const repositoryDetails = await api.repositories.getById(repositoryId);
         set({ repositoryDetails });
         return repositoryDetails;
       },
@@ -125,23 +120,20 @@ export const useRepositoriesStore = create<RepositoriesState>((set, get) => ({
       'Failed to fetch repository details',
     ),
 
-  fetchRepositorySettings: () =>
-    handleAsyncAction(
-      async () => {
-        const repositorySettings = await api.settings.settings.get();
-        set({ repositorySettings });
-        return repositorySettings;
-      },
-      set,
-      'Failed to fetch repository settings',
-    ),
-
   fetchAvailableRepositories: () =>
     handleAsyncAction(
       async () => {
-        const availableRepositories = await api.settings.repositories.getAvailable();
-        set({ availableRepositories });
-        return availableRepositories;
+        const externalRepositories = await api.repositories.getExternalRepositories();
+
+        const externalRepos = externalRepositories.data.map((repo) => ({
+          ...repo,
+          type: 'external',
+        }));
+
+        set({
+          availableRepositories: [...externalRepos] as CombinedAvailableRepository[],
+        });
+        return [...externalRepos] as CombinedAvailableRepository[];
       },
       set,
       'Failed to fetch available repositories',
@@ -149,59 +141,41 @@ export const useRepositoriesStore = create<RepositoriesState>((set, get) => ({
 
   createRepository: (data) =>
     handleAsyncAction(
-      async () => await api.settings.repositories.create(data),
+      async () => api.repositories.create(data),
       set,
       'Failed to create repository',
     ),
 
-  addSocprimeRepositories: (data) =>
-    handleAsyncAction(
-      async () => await api.settings.repositories.addSocprimeRepositories(data),
-      set,
-      'Failed to add Socprime repositories',
-    ),
-
   addExternalRepositories: (data) =>
     handleAsyncAction(
-      async () => await api.settings.repositories.addExternalRepositories(data),
+      async () => api.repositories.addExternalRepositories(data),
       set,
       'Failed to add external repositories',
     ),
 
   updateRepository: (repositoryId, data) =>
     handleAsyncAction(
-      async () => await api.settings.repositories.update(repositoryId, data),
+      async () => api.repositories.update(repositoryId, data),
       set,
       'Failed to update repository',
     ),
 
   deleteRepository: (repositoryId) =>
     handleAsyncAction(
-      async () => await api.settings.repositories.delete(repositoryId),
+      async () => api.repositories.delete(repositoryId),
       set,
       'Failed to delete repository',
     ),
 
   syncRepositories: () =>
-    handleAsyncAction(
-      async () => await api.settings.repositories.sync(),
-      set,
-      'Failed to sync repositories',
-    ),
+    handleAsyncAction(async () => api.repositories.sync(), set, 'Failed to sync repositories'),
 
   fetchSyncStatus: () =>
     handleAsyncAction(
-      async () => await api.settings.repositories.syncStatus(),
+      async () => api.repositories.syncStatus(),
       set,
       'Failed to fetch sync status',
       false,
-    ),
-
-  updateRepositoryApiKey: (data) =>
-    handleAsyncAction(
-      async () => await api.settings.settings.updateApiKey(data),
-      set,
-      'Failed to update repository API key',
     ),
 
   setActiveRepositoryId: (repositoryId) => {
@@ -247,7 +221,7 @@ export const useRepositoriesStore = create<RepositoriesState>((set, get) => ({
   updateRepositorySync: (repositoryId, sync) =>
     handleAsyncAction(
       async () => {
-        const response = await api.settings.repositories.updateSync(repositoryId, {
+        const response = await api.repositories.updateSync(repositoryId, {
           sync_enabled: sync,
         });
         const { repositories } = get();

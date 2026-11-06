@@ -1,0 +1,1 @@
+export { AttackChainsTab } from './AttackChainsTab';

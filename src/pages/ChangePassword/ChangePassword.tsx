@@ -1,10 +1,10 @@
-import { Button } from '@/components/Button';
-import { ChangePasswordFields } from '@/components/Form';
-import { Logo } from '@/components/Header/Logo';
-import { SpinnerSquare } from '@/components/Loading';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useRequiredChangePassword } from './useRequiredChangePassword';
+
+import { ChangePasswordFields } from '@/components/Form/ChangePasswordFields';
+import { Logo } from '@/components/Header/Logo';
+import { Button, SpinnerSquare } from '@socprime/react-ui';
 
 import '../Login/Login.scss';
 

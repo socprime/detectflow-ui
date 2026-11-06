@@ -1,0 +1,1 @@
+export { DetectionsTable } from './DetectionsTable';
