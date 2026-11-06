@@ -1,0 +1,1 @@
+export { IntegrationAccordion } from './SentinelAccordion';

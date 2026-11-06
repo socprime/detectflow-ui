@@ -1,5 +1,6 @@
-import { useThemeStore } from '@/store/theme';
 import { useEffect, useRef, useState } from 'react';
+
+import { useThemeStore } from '@/store/theme';
 
 interface ThemeColors {
   primary: string;
@@ -11,6 +12,8 @@ interface ThemeColors {
   subdued: string;
   warning: string;
   critical: string;
+  border: string;
+  yellow: string;
 }
 
 const defaultColors: ThemeColors = {
@@ -23,6 +26,8 @@ const defaultColors: ThemeColors = {
   subdued: '',
   warning: '',
   critical: '',
+  border: '',
+  yellow: '',
 };
 
 export function useThemeColors() {
@@ -45,6 +50,8 @@ export function useThemeColors() {
         subdued: styles.getPropertyValue('--text-subdued').trim(),
         warning: styles.getPropertyValue('--text-warning').trim(),
         critical: styles.getPropertyValue('--text-critical').trim(),
+        border: styles.getPropertyValue('--border').trim(),
+        yellow: styles.getPropertyValue('--bg-yellow').trim(),
       };
 
       setColors((prev) => {
@@ -57,7 +64,8 @@ export function useThemeColors() {
           prev.default === newColors.default &&
           prev.subdued === newColors.subdued &&
           prev.warning === newColors.warning &&
-          prev.critical === newColors.critical
+          prev.critical === newColors.critical &&
+          prev.border === newColors.border
         ) {
           return prev;
         }

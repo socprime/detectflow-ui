@@ -1,8 +1,6 @@
+import { HelperText, InputPassword, Label } from '@socprime/react-ui';
 import { LockIcon } from 'lucide-react';
 import { FieldErrors, UseFormRegister, UseFormWatch } from 'react-hook-form';
-import { HelperText } from '../HelperText';
-import { InputPassword } from '../Input';
-import { Label } from '../Label';
 import {
   createConfirmPasswordValidation,
   createNewPasswordValidation,

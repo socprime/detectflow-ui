@@ -1,25 +1,26 @@
 // import { ThemeToggle } from '../Theme/ThemeToggle';
-import { routes } from '@/models/router';
 import { Link } from 'react-router-dom';
 import { Logo } from './Logo';
+import { MobileNav } from './MobileNav';
 import { Navigation } from './Navigation';
 import { UserMenu } from './UserMenu';
 
+import { routes } from '@/models/router';
+
 export const Header: React.FC = () => {
   return (
-    <header className="border-border bg-secondary flex h-[56px] items-center justify-between border-b px-6">
-      <div className="flex items-center gap-8">
-        <Link className="flex items-center gap-3" to={routes.dashboard}>
-          <Logo className="size-20" />
-          <span className="flex flex-col">
-            <h2 className="line-height-1 text-l font-bold">DetectFlow</h2>
-            <span className="text-silver line-height-1 text-2xs">Open Source Edition</span>
-          </span>
+    <header className="border-border bg-secondary flex h-[56px] items-center justify-between gap-3 border-b px-4 sm:px-6">
+      <div className="flex min-w-0 items-center gap-3 lg:gap-8">
+        <MobileNav />
+        <Link className="flex min-w-0 items-center gap-2 sm:gap-3" to={routes.pipelines}>
+          <Logo className="size-14 shrink-0 sm:size-20" />
+          <h2 className="truncate text-lg font-semibold sm:text-xl">Detect</h2>
         </Link>
-        <Navigation />
+        <div className="hidden lg:block">
+          <Navigation />
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        {/* <ThemeToggle /> */}
+      <div className="flex shrink-0 items-center gap-2">
         <UserMenu />
       </div>
     </header>

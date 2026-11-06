@@ -1,18 +1,21 @@
-import { create } from 'zustand';
-import { api } from '../models/providers';
+import { api } from '@/models/providers';
 import type {
   BulkCreateRulesRequest,
   CreateRuleRequest,
+  DeleteRuleParams,
+  RuleDetailsRequest,
   RulesRequest,
+  UpdateRuleParams,
   UpdateRuleRequest,
-} from '../models/providers/Types/Request';
+} from '@/models/providers/Types/Request';
+import type { StatusResponse } from '@/models/providers/Types/responses/common';
 import type {
   BulkCreateRulesResponse,
   RuleDetailsResponse,
   RulesResponse,
-  StatusResponse,
-} from '../models/providers/Types/Response';
-import { createBaseActions, handleAsyncAction } from './middleware';
+} from '@/models/providers/Types/responses/rules';
+import { createBaseActions, handleAsyncAction } from '@/store/middleware';
+import { create } from 'zustand';
 
 interface RulesState {
   loading: boolean;
@@ -21,14 +24,21 @@ interface RulesState {
   ruleDetails: RuleDetailsResponse | null;
 
   fetchRules: (params?: RulesRequest) => Promise<RulesResponse>;
-  fetchRuleById: (ruleId: string) => Promise<RuleDetailsResponse>;
+  fetchRuleById: (
+    ruleId: string,
+    params?: RuleDetailsRequest,
+  ) => Promise<RuleDetailsResponse>;
   createRule: (repositoryId: string, data: CreateRuleRequest) => Promise<StatusResponse>;
   createRulesBulk: (
     repositoryId: string,
     data: BulkCreateRulesRequest,
   ) => Promise<BulkCreateRulesResponse>;
-  updateRule: (ruleId: string, data: UpdateRuleRequest) => Promise<StatusResponse>;
-  deleteRule: (ruleId: string) => Promise<StatusResponse>;
+  updateRule: (
+    ruleId: string,
+    data: UpdateRuleRequest,
+    params?: UpdateRuleParams,
+  ) => Promise<RuleDetailsResponse>;
+  deleteRule: (ruleId: string, params?: DeleteRuleParams) => Promise<void>;
   clearError: () => void;
   reset: () => void;
 }
@@ -64,10 +74,10 @@ export const useRulesStore = create<RulesState>((set, get) => ({
       'Failed to fetch rules list',
     ),
 
-  fetchRuleById: (ruleId) =>
+  fetchRuleById: (ruleId, params) =>
     handleAsyncAction(
       async () => {
-        const ruleDetails = await api.settings.rules.getById(ruleId);
+        const ruleDetails = await api.settings.rules.getById(ruleId, params);
         set({ ruleDetails });
         return ruleDetails;
       },
@@ -77,7 +87,7 @@ export const useRulesStore = create<RulesState>((set, get) => ({
 
   createRule: (repositoryId, data) =>
     handleAsyncAction(
-      async () => await api.settings.rules.create(repositoryId, data),
+      async () => api.settings.rules.create(repositoryId, data),
       set,
       'Failed to create rule',
       false,
@@ -85,22 +95,22 @@ export const useRulesStore = create<RulesState>((set, get) => ({
 
   createRulesBulk: (repositoryId, data) =>
     handleAsyncAction(
-      async () => await api.settings.rules.createBulk(repositoryId, data),
+      async () => api.settings.rules.createBulk(repositoryId, data),
       set,
       'Failed to bulk create rules',
       false,
     ),
 
-  updateRule: (ruleId, data) =>
+  updateRule: (ruleId, data, params) =>
     handleAsyncAction(
-      async () => await api.settings.rules.update(ruleId, data),
+      async () => api.settings.rules.update(ruleId, data, params),
       set,
       'Failed to update rule',
     ),
 
-  deleteRule: (ruleId) =>
+  deleteRule: (ruleId, params) =>
     handleAsyncAction(
-      async () => await api.settings.rules.delete(ruleId),
+      async () => api.settings.rules.delete(ruleId, params),
       set,
       'Failed to delete rule',
     ),

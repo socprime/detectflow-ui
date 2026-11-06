@@ -1,11 +1,15 @@
-import { Button } from '@/components/Button';
-import { HelperText, Input, Label } from '@/components/Form';
 import { MailIcon } from 'lucide-react';
-import { useAccountFrom } from './useAccountFrom';
+import { useAccountForm } from './useAccountForm';
+
+import { DisabledTooltip } from '@/components/Tooltip/DisabledTooltip';
+import { usePermissions } from '@/hooks';
+import { Button, HelperText, Input, Label } from '@socprime/react-ui';
 
 export const AccountForm = () => {
   const { loading, errors, isDirty, register, handleSubmit, handleProfileFormSubmit } =
-    useAccountFrom();
+    useAccountForm();
+  const { isViewer } = usePermissions();
+
   return (
     <form
       className="border-border bg-secondary flex flex-col gap-6 rounded-sm border p-6 shadow-md"
@@ -46,15 +50,17 @@ export const AccountForm = () => {
         )}
       </div>
       <div>
-        <Button
-          className="text-xs"
-          variant="primary"
-          type="submit"
-          disabled={loading || !isDirty}
-          loading={loading}
-        >
-          Save Changes
-        </Button>
+        <DisabledTooltip disabled={isViewer}>
+          <Button
+            className="text-xs"
+            variant="primary"
+            type="submit"
+            disabled={isViewer || loading || !isDirty}
+            loading={loading}
+          >
+            Save Changes
+          </Button>
+        </DisabledTooltip>
       </div>
     </form>
   );

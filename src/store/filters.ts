@@ -1,17 +1,17 @@
-import { create } from 'zustand';
-import { api } from '../models/providers';
+import { api, ApiError } from '@/models/providers';
 import type {
   CreateFilterRequest,
   PaginationParams,
   UpdateFilterRequest,
-} from '../models/providers/Types/Request';
+} from '@/models/providers/Types/Request';
+import type { StatusResponse } from '@/models/providers/Types/responses/common';
 import type {
   ActiveFilterResponse,
   FilterResponse,
   FiltersResponse,
-  StatusResponse,
-} from '../models/providers/Types/Response';
-import { createBaseActions, handleAsyncAction } from './middleware';
+} from '@/models/providers/Types/responses/filters';
+import { createBaseActions, handleAsyncAction } from '@/store/middleware';
+import { create } from 'zustand';
 
 interface FiltersState {
   loading: boolean;
@@ -21,6 +21,7 @@ interface FiltersState {
   filter: FilterResponse | null;
 
   fetchFilter: (filterId: string) => Promise<FilterResponse>;
+  fetchFilterIfExists: (filterId: string) => Promise<FilterResponse | null>;
   fetchActiveFilters: () => Promise<ActiveFilterResponse[]>;
   fetchFilters: (params?: PaginationParams) => Promise<FiltersResponse>;
   createFilter: (data: CreateFilterRequest) => Promise<StatusResponse>;
@@ -35,6 +36,7 @@ const initialState: Omit<
   | 'fetchActiveFilters'
   | 'fetchFilters'
   | 'fetchFilter'
+  | 'fetchFilterIfExists'
   | 'createFilter'
   | 'updateFilter'
   | 'deleteFilter'
@@ -84,23 +86,42 @@ export const useFiltersStore = create<FiltersState>((set) => ({
       'Failed to fetch filter',
     ),
 
+  fetchFilterIfExists: async (filterId) => {
+    set({ loading: true });
+
+    try {
+      return await api.settings.filters.getById(filterId);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) {
+        return null;
+      }
+
+      const message = error instanceof ApiError ? error.message : 'Failed to fetch filter';
+      set({ error: message });
+      console.error('[fetchFilterIfExists]', error);
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
   createFilter: (data) =>
     handleAsyncAction(
-      async () => await api.settings.filters.create(data),
+      async () => api.settings.filters.create(data),
       set,
       'Failed to create filter',
     ),
 
   updateFilter: (filterId, data) =>
     handleAsyncAction(
-      async () => await api.settings.filters.update(filterId, data),
+      async () => api.settings.filters.update(filterId, data),
       set,
       'Failed to update filter',
     ),
 
   deleteFilter: (filterId) =>
     handleAsyncAction(
-      async () => await api.settings.filters.delete(filterId),
+      async () => api.settings.filters.delete(filterId),
       set,
       'Failed to delete filter',
     ),

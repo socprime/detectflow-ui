@@ -1,8 +1,8 @@
-import { Accordion } from '@/components/Accordion';
-import { ScrollArea } from '@/components/ScrollArea/ScrollArea';
-import { RunTransformTestResult } from '@/models/providers';
 import { TestResultItemDefault } from './TestResultItemDefault';
 import { TestResultItemError } from './TestResultItemError';
+
+import { type RunTransformTestResult } from '@/models/providers';
+import { Accordion, ScrollArea } from '@socprime/react-ui';
 
 interface TestResultProps {
   parsed: RunTransformTestResult[];

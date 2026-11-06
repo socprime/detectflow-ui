@@ -1,4 +1,5 @@
-import { PipelineStatusDetails } from '@/models/providers';
+import { PipelineStatusDetails, TRepositoryIds } from '@/models/providers';
+import type { PipelineDestination } from '@/models/providers/Types/responses/pipelines';
 
 export enum SSEMessageType {
   DASHBOARD_UPDATE = 'dashboard_update',
@@ -31,6 +32,7 @@ export interface SSEGraphData {
   pipelines_count: number;
   total_events_eps: number;
   total_tagged_eps: number;
+  total_untagged_eps?: number;
   total_rules: number;
 }
 
@@ -38,8 +40,9 @@ export interface SSEPipelineStat {
   id: string;
   name: string;
   source_topics: string[];
+  destinations: PipelineDestination[];
   destination_topic: string;
-  repository_ids?: string[];
+  repository_ids?: TRepositoryIds[] | string[];
   save_untagged?: boolean;
   input_eps: number;
   output_eps: number;

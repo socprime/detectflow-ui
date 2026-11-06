@@ -1,0 +1,1 @@
+export { ThreatMetadata } from './ThreatMetadata';

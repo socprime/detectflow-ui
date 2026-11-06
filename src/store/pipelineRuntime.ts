@@ -1,12 +1,12 @@
-import { create } from 'zustand';
-import { api } from '../models/providers';
-import type { UpdatePipelineRuntimeRequest } from '../models/providers/Types/Request';
+import { api } from '@/models/providers';
+import type { UpdatePipelineRuntimeRequest } from '@/models/providers/Types/Request';
+import type { StatusResponse } from '@/models/providers/Types/responses/common';
 import type {
   IPipelineRuntimeResponse,
   PipelineRuntimeSchemaResponse,
-  StatusResponse,
-} from '../models/providers/Types/Response';
-import { createBaseActions, handleAsyncAction } from './middleware';
+} from '@/models/providers/Types/responses/pipelines';
+import { createBaseActions, handleAsyncAction } from '@/store/middleware';
+import { create } from 'zustand';
 
 interface PipelineRuntimeState {
   loading: boolean;
@@ -62,7 +62,7 @@ export const usePipelineRuntimeStore = create<PipelineRuntimeState>((set) => ({
 
   updatePipelineRuntime: async (data) =>
     handleAsyncAction(
-      async () => await api.settings.pipelineRuntime.update(data),
+      async () => api.settings.pipelineRuntime.update(data),
       set,
       'Failed to update pipeline runtime',
     ),

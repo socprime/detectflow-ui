@@ -1,8 +1,9 @@
+import { toast } from '@/utils/toast';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { ApiError } from '@/models/providers/ApiError';
 import type { GenerateMappingRequest } from '@/models/providers/Types/Request';
 import { useMappingStore } from '@/store';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 
 const POLLING_INTERVAL = 3000;
 
@@ -61,7 +62,7 @@ export const useMappingGenerationTracking = ({
 
       const message =
         error instanceof ApiError || error instanceof Error ? error.message : 'Unknown error';
-      toast.error('Failed to check mapping status: ' + message);
+      toast.error(`Failed to check mapping status: ${message}`);
       console.error('Failed to poll mapping status:', error);
     }
   }, [getMappingStatus, onMappingReady, stopPolling]);
@@ -81,7 +82,7 @@ export const useMappingGenerationTracking = ({
         setIsGenerating(false);
         const message =
           error instanceof ApiError || error instanceof Error ? error.message : 'Unknown error';
-        toast.error('Failed to start mapping generation: ' + message);
+        toast.error(`Failed to start mapping generation: ${message}`);
         console.error('Failed to start mapping generation:', error);
       }
     },

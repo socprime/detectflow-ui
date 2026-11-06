@@ -1,0 +1,1 @@
+export { MonitoredThreatsTab } from './MonitoredThreatsTab';

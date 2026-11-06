@@ -1,8 +1,9 @@
-import { api } from '@/models/providers/api';
-import { ApiError } from '@/models/providers/ApiError';
+import { toast } from '@/utils/toast';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+
+import { api } from '@/models/providers/api';
+import { ApiError } from '@/models/providers/ApiError';
 
 interface ChangePasswordForm {
   current_password: string;

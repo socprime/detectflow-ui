@@ -1,14 +1,23 @@
-import { Button } from '@/components/Button';
-import { ConfirmDeleteDialog } from '@/components/Dialog';
-import { HelperText, Input, Label, MultiSelect } from '@/components/Form';
-import { PageHeader } from '@/components/PageHeader';
-import { routes } from '@/models/router';
-import { PencilIcon, PlusIcon, TrashIcon } from 'lucide-react';
+import { PlusIcon, SaveIcon, TrashIcon } from 'lucide-react';
+import { useMemo } from 'react';
 import { Controller } from 'react-hook-form';
 import { AIGenerateDialog } from './AIGenerateDialog/AIGenerateDialog';
-import { DetectSection } from './DetectSection';
+import { DetectSection } from './DetectSection/DetectSection';
 import { TransformSection } from './TransformSection';
 import { useLogSourceCreate } from './useLogSourceCreate';
+
+import { DisabledTooltip } from '@/components/Tooltip/DisabledTooltip';
+import { usePermissions, useReturnLink } from '@/hooks';
+import { routes } from '@/models/router';
+import {
+  Button,
+  ConfirmDeleteDialog,
+  HelperText,
+  Input,
+  Label,
+  MultiSelect,
+  PageHeader,
+} from '@socprime/react-ui';
 
 export const LogSourceCreate: React.FC = () => {
   const {
@@ -21,7 +30,7 @@ export const LogSourceCreate: React.FC = () => {
     logSource,
     topicEvents,
     sourceTopicOptions,
-    repositoryOptions,
+    repositoriesList,
     control,
     errors,
     register,
@@ -40,13 +49,21 @@ export const LogSourceCreate: React.FC = () => {
     getValues,
   } = useLogSourceCreate();
 
+  const { isViewer } = usePermissions();
+  const backLink = useReturnLink({ fallback: routes.settingsLogSources });
+
+  const isDisabled = useMemo(
+    () => isViewer || loading || (!isCreateMode && !isDirty),
+    [isViewer, loading, isCreateMode, isDirty],
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title={logSourceId ? logSource?.name : 'New Log Source'}
         description="Log Source Configuration"
         loading={loading}
-        backLink={routes.settingsLogSources}
+        backLink={backLink}
       >
         <Button
           className="text-xs"
@@ -56,17 +73,19 @@ export const LogSourceCreate: React.FC = () => {
         >
           Cancel
         </Button>
-        <Button
-          disabled={loading || (!isCreateMode && !isDirty)}
-          variant="primary"
-          className="text-xs"
-          size="l"
-          onClick={handleSubmit(handleFormSubmit)}
-          loading={loading}
-        >
-          {logSourceId ? <PencilIcon className="size-4" /> : <PlusIcon className="size-4" />}
-          {logSourceId ? 'Update' : 'Create'}
-        </Button>
+        <DisabledTooltip disabled={isViewer}>
+          <Button
+            disabled={isDisabled}
+            variant="primary"
+            className="text-xs"
+            size="l"
+            onClick={handleSubmit(handleFormSubmit)}
+            loading={loading}
+          >
+            {logSourceId ? <SaveIcon className="size-4" /> : <PlusIcon className="size-4" />}
+            {logSourceId ? 'Update' : 'Create'}
+          </Button>
+        </DisabledTooltip>
       </PageHeader>
       <form
         className="border-border bg-secondary flex flex-col gap-6 rounded-sm border p-6 shadow-md"
@@ -121,38 +140,42 @@ export const LogSourceCreate: React.FC = () => {
             mappings.
           </HelperText>
         </div>
-        <TransformSection
-          control={control}
-          errors={errors}
-          boolState={boolState}
-          topicEvents={topicEvents}
-          onViewEventSamples={handleViewEventSamples}
-          onRunTransformTest={handleRunTransformTest}
-        />
-        <DetectSection
-          control={control}
-          errors={errors}
-          repositoryOptions={repositoryOptions}
-          loading={loading}
-          loadingSigmaFields={loadingSigmaFields}
-          boolState={boolState}
-          onPasteFieldsFromRepositories={handlePasteFieldsFromRepositories}
-          onOpenAIGenerateDialog={handleOpenAIGenerateDialog}
-          onRunDirectTest={handleRunDirectTest}
-        />
+        <div className="flex flex-col gap-4">
+          <TransformSection
+            control={control}
+            errors={errors}
+            boolState={boolState}
+            topicEvents={topicEvents}
+            onViewEventSamples={handleViewEventSamples}
+            onRunTransformTest={handleRunTransformTest}
+          />
+          <DetectSection
+            control={control}
+            errors={errors}
+            repositoriesList={repositoriesList}
+            loading={loading}
+            loadingSigmaFields={loadingSigmaFields}
+            boolState={boolState}
+            onPasteFieldsFromRepositories={handlePasteFieldsFromRepositories}
+            onOpenAIGenerateDialog={handleOpenAIGenerateDialog}
+            onRunDirectTest={handleRunDirectTest}
+          />
+        </div>
         {!isCreateMode && (
           <div className="flex justify-end">
-            <Button
-              variant="criticalOutline"
-              className="text-xs"
-              size="l"
-              onClick={handleOpenDeleteDialog}
-              type="button"
-              disabled={loading}
-            >
-              <TrashIcon className="size-4" />
-              Delete
-            </Button>
+            <DisabledTooltip disabled={isViewer}>
+              <Button
+                variant="criticalOutline"
+                className="text-xs"
+                size="l"
+                onClick={handleOpenDeleteDialog}
+                type="button"
+                disabled={isViewer || loading}
+              >
+                <TrashIcon className="size-4" />
+                Delete
+              </Button>
+            </DisabledTooltip>
           </div>
         )}
       </form>
@@ -161,14 +184,8 @@ export const LogSourceCreate: React.FC = () => {
         onClose={handleCloseDeleteDialog}
         onConfirm={handleDeleteConfirm}
         title="Delete Log Source"
-        message={
-          <>
-            Are you sure you want to delete "
-            <span className="break-all">{logSource?.name || 'this log source'}</span>
-            "? This action cannot be undone.
-          </>
-        }
         loading={loading}
+        message={<span className="break-all">{logSource?.name || 'this log source'}</span>}
       />
       <AIGenerateDialog
         sourceTopics={getValues('test_topics') || []}

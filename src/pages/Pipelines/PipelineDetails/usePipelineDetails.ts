@@ -1,12 +1,13 @@
-import { usePagination, useSearch, useSorting } from '@/hooks';
-import { PaginationParams } from '@/models/providers/Types/Request';
-import { usePipelinesStore } from '@/store/pipelines';
-import { convertSortingToApiParams } from '@/utils/tableSorting';
+import { toast } from '@/utils/toast';
 import { getCoreRowModel, type RowSelectionState, useReactTable } from '@tanstack/react-table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { toast } from 'sonner';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { createColumns } from './columns';
+
+import { usePagination, useReturnTo, useSearch, useSorting } from '@/hooks';
+import { OrderBy, PaginationParams } from '@/models/providers/Types/Request';
+import { usePipelinesStore } from '@/store/pipelines';
+import { convertSortingToApiParams } from '@/utils/tableSorting';
 
 export interface RuleDialogParams {
   ruleId: string;
@@ -15,8 +16,7 @@ export interface RuleDialogParams {
 
 export const usePipelineDetails = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const pipelineId = searchParams.get('pipelineId');
-  const ruleIdFromUrl = searchParams.get('ruleId');
+  const { pipelineId } = useParams<{ pipelineId: string }>();
   const {
     loading,
     loadingRules,
@@ -27,7 +27,6 @@ export const usePipelineDetails = () => {
     updatePipelineRule,
   } = usePipelinesStore();
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [isRuleDialogOpen, setIsRuleDialogOpen] = useState(!!ruleIdFromUrl);
   const { search, debouncedSearch, setSearch } = useSearch();
   const { page, limit, setPage, setLimit } = usePagination();
   const { sorting, handleSortingChange } = useSorting({ setPage });
@@ -65,7 +64,7 @@ export const usePipelineDetails = () => {
       search: debouncedSearch || undefined,
       tagged_filter: hideUnmatchedRules ? 'tagged' : undefined,
       sort: sort || 'name',
-      order: order || 'asc',
+      order: order || OrderBy.ASC,
     };
   }, [debouncedSearch, page, limit, sorting, hideUnmatchedRules]);
 
@@ -108,13 +107,6 @@ export const usePipelineDetails = () => {
     }
   }, [pipelineId, params]);
 
-  const handleCloseRuleDialog = useCallback(() => {
-    setIsRuleDialogOpen(false);
-    searchParams.delete('ruleId');
-    searchParams.delete('repositoryId');
-    setSearchParams(searchParams, { replace: true });
-  }, [searchParams, setSearchParams]);
-
   const handleTaggedFilterChange = useCallback(
     (checked: boolean) => {
       setHideUnmatchedRules(checked);
@@ -128,21 +120,11 @@ export const usePipelineDetails = () => {
     [searchParams, setSearchParams],
   );
 
-  const handleOpenRuleDialogWithId = useCallback(
-    ({ ruleId, repositoryId }: RuleDialogParams) => {
-      searchParams.set('ruleId', ruleId);
-      if (repositoryId) {
-        searchParams.set('repositoryId', repositoryId);
-      }
-      setSearchParams(searchParams, { replace: true });
-      setIsRuleDialogOpen(true);
-    },
-    [searchParams, setSearchParams],
-  );
+  const returnTo = useReturnTo();
 
   const columns = useMemo(
-    () => createColumns(checkboxLoading, handleOpenRuleDialogWithId),
-    [checkboxLoading, handleOpenRuleDialogWithId],
+    () => createColumns({ checkboxLoading, pipelineId: pipelineId || '', returnTo }),
+    [checkboxLoading, pipelineId, returnTo],
   );
 
   const table = useReactTable({
@@ -162,24 +144,22 @@ export const usePipelineDetails = () => {
   return {
     loading,
     loadingRules,
-    isRuleDialogOpen,
     checkboxLoading,
-    rules,
     pipeline,
+    table,
+    page,
+    rules,
+    totalPages,
+    search,
     selectedRules: selectedRuleIds,
     rowSelection,
     columns,
-    table,
-    page,
-    limit,
-    totalPages,
-    search,
     hideUnmatchedRules,
-    setHideUnmatchedRules: handleTaggedFilterChange,
+    limit,
+    handleTaggedFilterChange,
     setPage,
     setSearch,
     setLimit,
-    handleCloseRuleDialog,
     handleActivateRules,
   };
 };

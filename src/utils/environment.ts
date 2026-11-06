@@ -1,8 +1,8 @@
 import {
+  type Environment,
   getCurrentEnvironment,
   getEnvironmentDomain,
   isValidDomain,
-  type Environment,
 } from '@/config/environment';
 
 export interface BuildExternalUrlParams {

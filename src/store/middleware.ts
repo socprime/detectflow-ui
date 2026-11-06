@@ -1,4 +1,4 @@
-import { ApiError } from '../models/providers';
+import { ApiError } from '@/models/providers';
 
 export interface BaseState {
   loading: boolean;
@@ -45,6 +45,8 @@ export const handleAsyncAction = async <TResult>(
     console.error('[handleAsyncAction]', error);
     throw error;
   } finally {
-    set({ [loadingKey]: false });
+    if (isReload) {
+      set({ [loadingKey]: false });
+    }
   }
 };

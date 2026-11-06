@@ -1,8 +1,10 @@
-import type { LogSource } from '@/models/providers/Types/Response';
-import { routes } from '@/models/router';
-import { cn } from '@/utils';
 import { FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+import { useReturnTo } from '@/hooks';
+import type { LogSource } from '@/models/providers/Types/responses/logSources';
+import { routeHelpers } from '@/models/router';
+import { cn, withReturnTo } from '@/utils';
 
 interface LogSourcesCardProps {
   className?: string;
@@ -10,13 +12,15 @@ interface LogSourcesCardProps {
 }
 
 export const LogSourcesCard: React.FC<LogSourcesCardProps> = ({ logSource, className }) => {
+  const returnTo = useReturnTo();
+
   return (
     <Link
       className={cn(
         'border-border bg-secondary hover:border-success flex flex-col gap-2 rounded-lg border p-6 text-xs transition-all hover:shadow-lg',
         className,
       )}
-      to={`${routes.settingsLogSourcesCreate}?logSourceId=${logSource.id}`}
+      to={withReturnTo(routeHelpers.settingsLogSourceEdit(logSource.id), returnTo)}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">

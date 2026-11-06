@@ -1,15 +1,17 @@
-import { routes } from '@/models/router/routes';
-import { useAuthStore } from '@/store/auth';
 import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { SpinnerSquare } from '../Loading';
+
+import { UserRole } from '@/enums';
+import { routes } from '@/models/router/routes';
+import { useAuthStore } from '@/store/auth';
+import { SpinnerSquare } from '@socprime/react-ui';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: string;
+  requiredRoles?: UserRole[];
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRoles }) => {
   const { isAuthenticated, user, loading, mustChangePassword, isInitialized, ensureInitialized } =
     useAuthStore();
   const location = useLocation();
@@ -32,8 +34,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requir
     return <Navigate to={routes.changePassword} replace />;
   }
 
-  if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to={routes.dashboard} replace />;
+  if (requiredRoles && !requiredRoles.includes(user.role)) {
+    return <Navigate to={routes.pipelines} replace />;
   }
 
   return <>{children}</>;

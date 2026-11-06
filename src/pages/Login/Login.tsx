@@ -1,10 +1,9 @@
-import { Button } from '@/components/Button';
-import { HelperText, Input, Label } from '@/components/Form';
-import { InputPassword } from '@/components/Form/Input';
-import { Logo } from '@/components/Header/Logo';
-import { Loader2, LockIcon, MailIcon } from 'lucide-react';
+import { LockIcon, MailIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLogin } from './useLogin';
+
+import { Logo } from '@/components/Header/Logo';
+import { Button, HelperText, Input, InputPassword, Label } from '@socprime/react-ui';
 
 import './Login.scss';
 
@@ -75,8 +74,9 @@ export const Login: React.FC = () => {
               type="submit"
               variant="primary"
               disabled={isSubmitting}
+              loading={isSubmitting}
             >
-              {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : 'Sign in'}
+              Sign in
             </Button>
           </form>
         </div>

@@ -1,15 +1,23 @@
-import { Badge } from '@/components/Badge';
-import { Checkbox } from '@/components/Form';
-import { Tooltip } from '@/components/Tooltip';
-import type { PipelineRule } from '@/models/providers/Types/Response';
-import { formatDate } from '@/utils';
+import { Badge, Checkbox, Tooltip } from '@socprime/react-ui';
 import type { ColumnDef } from '@tanstack/react-table';
-import { RuleDialogParams } from './usePipelineDetails';
+import { Link } from 'react-router';
 
-export const createColumns = (
-  checkboxLoading: boolean,
-  onRuleClick: (params: RuleDialogParams) => void,
-): ColumnDef<PipelineRule>[] => [
+import { SeverityLevel } from '@/components/SeverityLevel';
+import type { PipelineRule } from '@/models/providers/Types/responses/pipelines';
+import { routeHelpers } from '@/models/router';
+import { formatDate, withReturnTo } from '@/utils';
+
+interface CreateColumnsProps {
+  checkboxLoading: boolean;
+  pipelineId: string;
+  returnTo?: string;
+}
+
+export const createColumns = ({
+  checkboxLoading,
+  pipelineId,
+  returnTo,
+}: CreateColumnsProps): ColumnDef<PipelineRule>[] => [
   {
     header: ({ table }) => (
       <Checkbox
@@ -43,14 +51,20 @@ export const createColumns = (
 
       return (
         <span className="text-default flex items-center gap-2 text-xs font-normal">
-          <span
+          <SeverityLevel severity={row.original.level} />
+          <Link
             className="text-default flex cursor-pointer items-center gap-2 text-xs hover:underline"
-            onClick={() =>
-              onRuleClick({ ruleId: row.original.id, repositoryId: row.original.repository_id })
-            }
+            to={withReturnTo(
+              routeHelpers.pipelineDetailsRule({
+                pipelineId,
+                repositoryId: row.original.repository_id,
+                ruleId: row.original.id,
+              }),
+              returnTo,
+            )}
           >
             {row.original.name}
-          </span>
+          </Link>
           {row.original.tagged_events > 0 && (
             <Badge variant="lightBlue" className="text-2xs text-light-blue rounded-xs">
               Matched
@@ -72,7 +86,12 @@ export const createColumns = (
     accessorKey: 'repository',
     meta: { width: '200px' },
     cell: ({ row }) => (
-      <span className="text-gray-chateau text-xs font-normal">{row.original.repository}</span>
+      <span
+        className="text-gray-chateau truncate-1 text-xs font-normal break-all"
+        title={row.original.repository}
+      >
+        {row.original.repository}
+      </span>
     ),
   },
   {
@@ -98,7 +117,7 @@ export const createColumns = (
   {
     header: 'Tagged Events',
     accessorKey: 'tagged_events',
-    meta: { width: '80px' },
+    meta: { width: '140px' },
     cell: ({ row }) => (
       <span className="flex justify-end text-xs font-normal">
         {row.original.tagged_events || '-'}
@@ -108,7 +127,7 @@ export const createColumns = (
   {
     header: 'Status',
     accessorKey: 'enabled',
-    meta: { width: '60px' },
+    meta: { width: '120px' },
     cell: ({ row }) => (
       <Badge
         className={row.original.enabled ? 'text-success' : 'text-gray-chateau'}

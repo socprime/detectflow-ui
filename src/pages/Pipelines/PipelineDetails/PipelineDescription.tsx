@@ -1,10 +1,19 @@
 import { PipelineResponse } from '@/models/providers/Types';
+import type { PipelineDestination } from '@/models/providers/Types/responses/pipelines';
 
 interface PipelineDescriptionProps {
   pipeline: PipelineResponse;
 }
 
 export const PipelineDescription = ({ pipeline }: PipelineDescriptionProps) => {
+  const OUTPUT_MODE_LABELS: Record<PipelineDestination['output_mode'], string> = {
+    all_events: 'All',
+    matched_only: 'Tagged',
+    unmatched_only: 'Untagged',
+  };
+
+  const destinations: PipelineDestination[] = pipeline?.destinations ?? [];
+
   return (
     <div className="flex flex-wrap gap-x-5 gap-y-1">
       <div className="flex items-center gap-2">
@@ -14,9 +23,18 @@ export const PipelineDescription = ({ pipeline }: PipelineDescriptionProps) => {
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-gray-chateau text-2xs">Destination Topic:</span>
+        <span className="text-gray-chateau text-2xs">Destinations:</span>
         <span className="text-default text-2xs">
-          {pipeline?.destination_topic ? pipeline?.destination_topic : 'None'}
+          {destinations.length
+            ? destinations
+                .map(
+                  (d) =>
+                    `${d.topic || 'None'} (${OUTPUT_MODE_LABELS[d.output_mode]}, ${
+                      d.apply_parser_to_output_events ? 'Parsed' : 'Source Format'
+                    })`,
+                )
+                .join(', ')
+            : 'None'}
         </span>
       </div>
       <div className="flex items-center gap-2">
@@ -24,18 +42,6 @@ export const PipelineDescription = ({ pipeline }: PipelineDescriptionProps) => {
         <span className="text-default text-2xs">
           {pipeline?.log_source_name ? pipeline?.log_source_name : 'None'}
         </span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-gray-chateau text-2xs">Output Format:</span>
-        <span className="text-default text-2xs">
-          {pipeline?.apply_parser_to_output_events
-            ? 'Apply Parser to Output Events'
-            : 'Preserve Source Format'}
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-gray-chateau text-2xs">Save Untagged Events:</span>
-        <span className="text-default text-2xs">{pipeline?.save_untagged ? 'Yes' : 'No'}</span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-gray-chateau text-2xs">Filters:</span>

@@ -1,1 +1,0 @@
-export { SpinnerSquare } from './SpinnerSquare';

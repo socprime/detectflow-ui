@@ -1,8 +1,15 @@
+import { generatePath, redirect } from 'react-router-dom';
+
 export interface QueryParamsOptions {
   preserve?: string[];
   remove?: string[];
   resetPage?: boolean;
   pageParamName?: string;
+}
+export interface QueryParamNumberOptions {
+  min?: number;
+  max?: number;
+  allowFloat?: boolean;
 }
 
 export const getQueryParam = (
@@ -13,27 +20,28 @@ export const getQueryParam = (
   return params.get(key) || defaultValue;
 };
 
-export interface QueryParamNumberOptions {
-  min?: number;
-  max?: number;
-  allowFloat?: boolean;
-}
-
 export const getQueryParamNumber = (
   params: URLSearchParams,
   key: string,
-  defaultValue: number = 0,
   options?: QueryParamNumberOptions,
+  defaultValue: number = 0,
 ): number => {
   const value = params.get(key);
-  if (!value) return defaultValue;
+  if (!value) {
+    return defaultValue;
+  }
 
   const parsed = options?.allowFloat ? parseFloat(value) : parseInt(value, 10);
 
-  if (isNaN(parsed)) return defaultValue;
-
-  if (options?.min !== undefined && parsed < options.min) return options.min;
-  if (options?.max !== undefined && parsed > options.max) return options.max;
+  if (Number.isNaN(parsed)) {
+    return defaultValue;
+  }
+  if (options?.min !== undefined && parsed < options.min) {
+    return options.min;
+  }
+  if (options?.max !== undefined && parsed > options.max) {
+    return options.max;
+  }
 
   return parsed;
 };
@@ -44,7 +52,9 @@ export const getQueryParamBoolean = (
   defaultValue: boolean = false,
 ): boolean => {
   const value = params.get(key);
-  if (value === null) return defaultValue;
+  if (value === null) {
+    return defaultValue;
+  }
   return value === 'true' || value === '1';
 };
 
@@ -145,6 +155,17 @@ export const buildUrl = (
   return queryString ? `${baseUrl}${queryString}` : baseUrl;
 };
 
+export const RETURN_TO_PARAM = 'returnTo';
+
+export const withReturnTo = (url: string, returnTo?: string | null): string => {
+  if (!returnTo) {
+    return url;
+  }
+
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}${RETURN_TO_PARAM}=${encodeURIComponent(returnTo)}`;
+};
+
 export const getQueryParamsAsObject = (params: URLSearchParams): Record<string, string> => {
   const result: Record<string, string> = {};
   params.forEach((value, key) => {
@@ -170,7 +191,9 @@ export const getQueryParamArray = (
   separator: string = ',',
 ): string[] => {
   const value = params.get(key);
-  if (!value) return [];
+  if (!value) {
+    return [];
+  }
   return value.split(separator).filter(Boolean);
 };
 
@@ -205,4 +228,28 @@ export const toggleQueryParam = (
     newParams.set(key, value);
   }
   return newParams;
+};
+
+export const redirectWithSearch = (to: string) => {
+  return ({ request }: { request: Request }) => {
+    const { search } = new URL(request.url);
+    return redirect(`${to}${search}`);
+  };
+};
+
+/**
+ * Redirects to a path-param route template, filling params from the matched
+ * route and keeping the query string (tabs, filters, returnTo) intact.
+ */
+export const redirectToPath = (pathTemplate: string) => {
+  return ({
+    request,
+    params,
+  }: {
+    request: Request;
+    params: Record<string, string | undefined>;
+  }) => {
+    const { search } = new URL(request.url);
+    return redirect(`${generatePath(pathTemplate, params as Record<string, string>)}${search}`);
+  };
 };

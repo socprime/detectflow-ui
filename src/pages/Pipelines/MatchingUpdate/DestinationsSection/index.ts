@@ -1,0 +1,1 @@
+export { DestinationsSection } from './DestinationsSection';

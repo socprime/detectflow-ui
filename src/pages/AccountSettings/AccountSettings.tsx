@@ -1,6 +1,7 @@
-import { Aside } from '@/components/Aside';
 import { Outlet } from 'react-router-dom';
 import { tabs } from './accountSettingsTabs';
+
+import { Aside } from '@socprime/react-ui';
 
 export const AccountSettings = () => {
   return (

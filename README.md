@@ -1,7 +1,6 @@
-# DetectFlow UI
+# DetectFlow UI (Open Source)
 
-Web interface for administering DetectFlow pipelines.
-This project is a component of SOC Prime DetectFlow OSS. See its [README](https://github.com/socprime/detectflow-main) for more details and instructions.
+Web interface for administering DetectFlow pipelines based on Apache Flink.
 
 ## Description
 
@@ -30,6 +29,9 @@ The repository contains the open-source edition only.
 ## Project Structure
 
 ```text
+app/                # Production server (Express)
+├── server.js       # Serves the static build, proxies /api, exposes /health
+└── package.json    # Server-only runtime dependencies
 src/
 ├── components/     # Shared UI components
 ├── pages/          # Route pages
@@ -43,21 +45,14 @@ src/
 
 ## Requirements
 
-- Node.js 18+
+- Node.js 20.19+ (22 LTS recommended)
 - Yarn (recommended) or npm
 
-### Docker
-
-```bash
-docker build -t detectflow-matchnode .
-docker run -p 8000:8000 --env-file .env detectflow-matchnode
-```
-
-## Development
+## Installation
 
 ```bash
 git clone <your-fork-or-repo-url>
-cd etl-admin-panel-ui
+cd detectflow-ui
 yarn install
 ```
 
@@ -69,6 +64,7 @@ npm install
 
 ## Run Locally
 
+Development mode:
 
 ```bash
 yarn watch
@@ -97,14 +93,25 @@ npm run build
 Preview production build:
 
 ```bash
-yarn prod
+yarn preview
 ```
 
 or
 
 ```bash
-npm run prod
+npm run preview
 ```
+
+## Run with Docker
+
+The `Dockerfile` builds the frontend and packages it with the Express server from `app/`:
+
+```bash
+docker build -t detectflow-ui .
+docker run -e VITE_API_PROXY_TARGET=https://your-backend.example.com -p 4173:4173 detectflow-ui
+```
+
+The app is available at `http://localhost:4173`; the server proxies `/api` to `VITE_API_PROXY_TARGET` and exposes a health check at `/health`.
 
 ## Configuration
 
@@ -124,11 +131,15 @@ VITE_PREVIEW_ALLOWED_HOSTS=example.com
 
 # Optional explicit environment (local | dev | prod)
 VITE_ENVIRONMENT_STAGE=local
+```
 
 ## Scripts
+
 - `yarn watch` / `npm run watch` - start dev server
 - `yarn build` / `npm run build` - build for production
-- `yarn prod` / `npm run prod` - preview production build
-```
+- `yarn preview` / `npm run preview` - preview production build
+- `yarn lint` / `npm run lint` - run ESLint
+
 ## License
-Apache License 2.0, see [LICENSE](LICENSE).
+
+Licensed under the terms in `LICENSE`.

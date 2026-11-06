@@ -1,4 +1,4 @@
-import { DefaultDialog } from '@/components/Dialog/DefaultDialog';
+import { DefaultDialog } from '@socprime/react-ui';
 
 interface MatchNodeDialogProps {
   isOpen: boolean;

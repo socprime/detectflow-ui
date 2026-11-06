@@ -1,0 +1,1 @@
+export { AccordionRepositories } from './AccordionRepositories';

@@ -1,5 +1,7 @@
 import { SortingState } from '@tanstack/react-table';
 
+import { OrderBy } from '@/models/providers';
+
 export const convertSortingToApiParams = (sorting: SortingState) => {
   if (sorting.length === 0) {
     return { sort: undefined, order: undefined };
@@ -8,11 +10,11 @@ export const convertSortingToApiParams = (sorting: SortingState) => {
   const firstSort = sorting[0];
   return {
     sort: firstSort.id,
-    order: firstSort.desc ? ('desc' as const) : ('asc' as const),
+    order: firstSort.desc ? OrderBy.DESC : OrderBy.ASC,
   };
 };
 
-export const convertApiParamsToSorting = (sort?: string, order?: 'asc' | 'desc'): SortingState => {
+export const convertApiParamsToSorting = (sort?: string, order?: OrderBy): SortingState => {
   if (!sort) {
     return [];
   }
@@ -20,7 +22,7 @@ export const convertApiParamsToSorting = (sort?: string, order?: 'asc' | 'desc')
   return [
     {
       id: sort,
-      desc: order === 'desc',
+      desc: order === OrderBy.DESC,
     },
   ];
 };

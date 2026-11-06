@@ -1,19 +1,23 @@
-import { Button } from '@/components/Button';
+import { CheckIcon, CopyIcon, InfoIcon, SparklesIcon, XIcon } from 'lucide-react';
+import { useAIGenerateDialog } from './useAIGenerateDialog';
+
+import type { TRepositoryIds } from '@/models/providers/Types/responses/repositories';
+import { Editor } from '@socprime/react-ui/editor';
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/Dialog';
-import { Editor, HelperText, Label } from '@/components/Form';
-import { CheckIcon, CopyIcon, InfoIcon, SparklesIcon, XIcon } from 'lucide-react';
-import { useAIGenerateDialog } from './useAIGenerateDialog';
+  HelperText,
+  Label,
+} from '@socprime/react-ui';
 
 interface AIGenerateDialogProps {
   isOpen: boolean;
   sourceTopics?: string[];
-  repositoryIds?: string[];
+  repositoryIds?: TRepositoryIds[];
   parsingScript?: string;
   onClose: () => void;
   onApplyMapping: (mapping: string) => void;

@@ -1,12 +1,15 @@
-import { Aside } from '@/components/Aside';
+import { FC } from 'react';
 import { Outlet } from 'react-router-dom';
-import { tabs } from './settingsTabs';
+import { settingsTabs } from './settingsTabs';
 
-export const Settings: React.FC = () => {
+import { Aside, AsideHorizontal } from '@socprime/react-ui';
+
+export const Settings: FC = () => {
   return (
-    <div className="flex h-full min-w-0 flex-1 gap-6 p-6">
-      <div className="sticky top-4 max-w-64 min-w-[216px] flex-1">
-        <Aside tabs={tabs} />
+    <div className="flex h-full min-w-0 flex-1 flex-col gap-4 p-4 sm:p-6 lg:flex-row lg:gap-6">
+      <AsideHorizontal className="lg:hidden" tabs={settingsTabs} />
+      <div className="sticky top-4 hidden max-w-60 min-w-[190px] flex-1 self-start lg:block">
+        <Aside tabs={settingsTabs} />
       </div>
       <div className="min-w-0 flex-6">
         <Outlet />

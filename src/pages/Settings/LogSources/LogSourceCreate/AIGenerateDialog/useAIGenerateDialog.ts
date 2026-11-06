@@ -1,13 +1,15 @@
+import { toast } from '@/utils/toast';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMappingGenerationTracking } from './useMappingGenerationTracking';
+
 import { ApiError } from '@/models/providers/ApiError';
+import type { TRepositoryIds } from '@/models/providers/Types/responses/repositories';
 import { useMappingStore } from '@/store';
 import { useRepositoriesStore } from '@/store/repositories';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
-import { useMappingGenerationTracking } from './useMappingGenerationTracking';
 
 interface UseAIGenerateDialogProps {
   isOpen: boolean;
-  repositoryIds: string[];
+  repositoryIds: TRepositoryIds[];
   sourceTopics: string[];
   parsingScript: string;
   onApplyMapping: (mapping: string) => void;
@@ -98,7 +100,7 @@ export const useAIGenerateDialog = ({
       setIsCopied(false);
       const errorMessage =
         error instanceof ApiError || error instanceof Error ? error.message : 'Unknown error';
-      toast.error('Failed to copy prompt: ' + errorMessage);
+      toast.error(`Failed to copy prompt: ${errorMessage}`);
       console.error('Failed to copy prompt:', error);
     }
   };
@@ -112,8 +114,8 @@ export const useAIGenerateDialog = ({
   };
 
   const repositoryNames = useMemo(() => {
-    return repositoryIds.map((id) => {
-      return repositories?.data?.find((repository) => repository.id === id)?.name;
+    return repositoryIds.map((selection) => {
+      return repositories?.data?.find((repository) => repository.id === selection.id)?.name;
     });
   }, [repositoryIds, repositories]);
 

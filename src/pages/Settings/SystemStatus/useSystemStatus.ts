@@ -1,6 +1,7 @@
-import { useSystemStatusStore } from '@/store/systemStatus';
 import { useEffect, useMemo, useState } from 'react';
 import { SystemStatus } from '../../../enums/SystemStatus';
+
+import { useSystemStatusStore } from '@/store/systemStatus';
 
 export const useSystemStatus = () => {
   const { loading, platforms, versions, fetchHealthCheck, fetchHealthCheckNow } =

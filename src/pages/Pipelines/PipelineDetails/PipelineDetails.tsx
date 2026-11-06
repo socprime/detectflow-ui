@@ -1,14 +1,21 @@
-import { Button } from '@/components/Button';
-import { Label, SearchInput, Switch } from '@/components/Form';
-import { Skeleton } from '@/components/Loading/Skeleton';
-import { PageHeader } from '@/components/PageHeader';
-import { PaginationWrap } from '@/components/Pagination';
-import { TableWrap } from '@/components/Table';
-import { routeHelpers, routes } from '@/models/router/routes';
-import { Rule } from '@/pages/Settings/Repositories/Rule';
 import { ActivityIcon, AlertCircle, CheckCircle2, HashIcon, SettingsIcon } from 'lucide-react';
 import { PipelineDescription } from './PipelineDescription';
 import { usePipelineDetails } from './usePipelineDetails';
+
+import { DisabledTooltip } from '@/components/Tooltip/DisabledTooltip';
+import { usePermissions, useReturnLink, useReturnTo } from '@/hooks';
+import { routeHelpers, routes } from '@/models/router';
+import { withReturnTo } from '@/utils';
+import {
+  Button,
+  Label,
+  PageHeader,
+  PaginationWrap,
+  SearchInput,
+  Skeleton,
+  Switch,
+  TableWrap,
+} from '@socprime/react-ui';
 
 export const PipelineDetails = () => {
   const {
@@ -23,25 +30,19 @@ export const PipelineDetails = () => {
     search,
     selectedRules,
     rowSelection,
-    isRuleDialogOpen,
     columns,
     hideUnmatchedRules,
     limit,
-    setHideUnmatchedRules,
+    handleTaggedFilterChange,
     setPage,
     setSearch,
     setLimit,
-    handleCloseRuleDialog,
     handleActivateRules,
   } = usePipelineDetails();
 
-  if (isRuleDialogOpen) {
-    return (
-      <div className="flex-colbg-primary flex w-full gap-6 p-6">
-        <Rule backLink={false} onClose={handleCloseRuleDialog} />
-      </div>
-    );
-  }
+  const { isViewer } = usePermissions();
+  const backLink = useReturnLink({ fallback: routes.pipelines });
+  const returnTo = useReturnTo();
 
   return (
     <div className="flex w-full flex-col gap-6 p-6">
@@ -49,12 +50,12 @@ export const PipelineDetails = () => {
         loading={loading}
         title={pipeline?.name}
         description={pipeline ? <PipelineDescription pipeline={pipeline} /> : 'Pipeline Details'}
-        backLink={routes.pipelines}
+        backLink={backLink}
       >
         <Button
           className="text-xs"
           size="l"
-          to={routeHelpers.pipelinesEdit(pipeline?.id || '')}
+          to={withReturnTo(routeHelpers.matchingEdit(pipeline?.id || ''), returnTo)}
           variant="secondaryOutline"
         >
           <SettingsIcon className="size-4" />
@@ -117,55 +118,57 @@ export const PipelineDetails = () => {
       </div>
       <div className="align-center flex justify-between gap-6">
         <div className="flex flex-1 items-center gap-4">
+          <SearchInput
+            className="w-full max-w-sm text-xs"
+            classNamesInput="h-10"
+            placeholder="Search rules..."
+            value={search}
+            onChange={setSearch}
+          />
           {selectedRules.length > 0 && (
             <>
               <span className="text-gray-chateau text-2xs">
                 {selectedRules.length} rules selected
               </span>
               <div className="flex items-center gap-3">
-                <Button
-                  variant="secondaryOutline"
-                  className="text-xs"
-                  onClick={() => handleActivateRules('enable')}
-                  disabled={checkboxLoading}
-                >
-                  Activate
-                </Button>
-                <Button
-                  variant="secondaryOutline"
-                  className="text-xs"
-                  onClick={() => handleActivateRules('disable')}
-                  disabled={checkboxLoading}
-                >
-                  Deactivate
-                </Button>
+                <DisabledTooltip disabled={isViewer}>
+                  <Button
+                    variant="secondaryOutline"
+                    className="text-xs"
+                    onClick={() => handleActivateRules('enable')}
+                    disabled={checkboxLoading || isViewer}
+                  >
+                    Activate
+                  </Button>
+                </DisabledTooltip>
+                <DisabledTooltip disabled={isViewer}>
+                  <Button
+                    variant="secondaryOutline"
+                    className="text-xs"
+                    onClick={() => handleActivateRules('disable')}
+                    disabled={checkboxLoading || isViewer}
+                  >
+                    Deactivate
+                  </Button>
+                </DisabledTooltip>
               </div>
             </>
           )}
         </div>
-        <>
-          <div className="flex items-center gap-3">
-            <Switch
-              disabled={loading}
-              id="hide-unmatched-rules"
-              name="hide_unmatched_rules"
-              checked={hideUnmatchedRules}
-              onCheckedChange={setHideUnmatchedRules}
-            />
-            <div className="flex flex-col">
-              <Label htmlFor="save-untagged-events" className="text-subdued text-xs">
-                Hide unmatched rules
-              </Label>
-            </div>
-          </div>
-          <SearchInput
-            className="text-xs"
-            classNamesInput="h-10"
-            placeholder="Search rules..."
-            value={search}
-            onChange={setSearch}
+        <div className="flex items-center gap-3">
+          <Switch
+            disabled={loading}
+            id="hide-unmatched-rules"
+            name="hide_unmatched_rules"
+            checked={hideUnmatchedRules}
+            onCheckedChange={handleTaggedFilterChange}
           />
-        </>
+          <div className="flex flex-col">
+            <Label htmlFor="save-untagged-events" className="text-subdued text-xs">
+              Hide unmatched rules
+            </Label>
+          </div>
+        </div>
       </div>
       <TableWrap
         table={table}

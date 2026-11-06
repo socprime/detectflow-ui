@@ -1,11 +1,15 @@
-import { Button } from '@/components/Button/Button';
-import { PageHeader } from '@/components/PageHeader/PageHeader';
-import { PipelineRuntimeFormFields } from './PipelineRuntimeFormFields';
+import { DisabledTooltip } from '@/components/Tooltip/DisabledTooltip';
+import { PipelineRuntimeFormFields } from '@/modules/PipelineRuntimeFormFields';
 import { usePipelineRuntime } from './usePipelineRuntime';
+
+import { usePermissions } from '@/hooks';
+import { Button, PageHeader } from '@socprime/react-ui';
 
 export const PipelineRuntime = () => {
   const { loading, isAdmin, isDirty, isValid, errors, register, handleSubmit, handleFormSubmit } =
     usePipelineRuntime();
+
+  const { isViewer } = usePermissions();
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -21,16 +25,18 @@ export const PipelineRuntime = () => {
         <PipelineRuntimeFormFields register={register} errors={errors} isReadOnly={!isAdmin} />
         <div className="border-border border-t" />
         <div className="flex justify-end">
-          <Button
-            className="text-xs"
-            type="submit"
-            variant="primary"
-            size="l"
-            disabled={!isDirty || !isValid}
-            loading={loading}
-          >
-            Save Settings
-          </Button>
+          <DisabledTooltip disabled={isViewer}>
+            <Button
+              className="text-xs"
+              type="submit"
+              variant="primary"
+              size="l"
+              disabled={isViewer || !isDirty || !isValid}
+              loading={loading}
+            >
+              Save Settings
+            </Button>
+          </DisabledTooltip>
         </div>
       </form>
     </div>

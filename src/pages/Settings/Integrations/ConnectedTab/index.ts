@@ -1,0 +1,1 @@
+export { ConnectedTab } from './ConnectedTab';

@@ -1,10 +1,9 @@
-import { ConditionalContent } from '@/components/ConditionalContent';
-import { Skeleton } from '@/components/Loading';
-import { PageHeader } from '@/components/PageHeader';
-import { SystemStatus as SystemStatusEnum } from '@/enums';
 import { AlertCircleIcon, CircleCheckIcon, Clock4Icon, XCircleIcon } from 'lucide-react';
 import { MatchNodeDialog } from './MatchNodeDialog';
 import { useSystemStatus } from './useSystemStatus';
+
+import { SystemStatus as SystemStatusEnum } from '@/enums';
+import { ConditionalContent, PageHeader, Skeleton } from '@socprime/react-ui';
 
 export const SystemStatus = () => {
   const {
@@ -119,19 +118,19 @@ export const SystemStatus = () => {
                         </span>
                       </div>
                       {check.status === SystemStatusEnum.Error ? (
-                        <div className="bg-critical/15 text-critical text-2xs border-critical flex h-6 items-center justify-center rounded-xs border px-3">
+                        <div className="bg-critical/15 text-critical text-2xs border-critical flex h-6 items-center justify-center rounded-xs border px-3 whitespace-nowrap">
                           Error
                         </div>
                       ) : check.status === SystemStatusEnum.Warning ? (
-                        <div className="bg-warning/15 text-warning text-2xs border-warning flex h-6 items-center justify-center rounded-xs border px-3">
+                        <div className="bg-warning/15 text-warning text-2xs border-warning flex h-6 items-center justify-center rounded-xs border px-3 whitespace-nowrap">
                           Warning
                         </div>
                       ) : check.status === SystemStatusEnum.Operational ? (
-                        <div className="bg-success/15 text-success text-2xs border-success flex h-6 items-center justify-center rounded-xs border px-3">
+                        <div className="bg-success/15 text-success text-2xs border-success flex h-6 items-center justify-center rounded-xs border px-3 whitespace-nowrap">
                           Operational
                         </div>
                       ) : check.status === SystemStatusEnum.NotEnabled ? (
-                        <div className="bg-disabled/15 text-disabled text-2xs border-disabled flex h-6 items-center justify-center rounded-xs border px-3">
+                        <div className="bg-disabled/15 text-disabled text-2xs border-disabled flex h-6 items-center justify-center rounded-xs border px-3 whitespace-nowrap">
                           Not Enabled
                         </div>
                       ) : null}

@@ -1,11 +1,12 @@
-import { EmptyState } from '@/components/EmptyState';
+import { ServerIcon } from 'lucide-react';
+
 import { routes } from '@/models/router/routes';
-import { Server } from 'lucide-react';
+import { EmptyState } from '@socprime/react-ui';
 
 export const LogSourcesEmptyState: React.FC = () => {
   return (
     <EmptyState
-      Icon={Server}
+      Icon={ServerIcon}
       title="No Custom Log Sources Yet"
       description="Create your first custom log source with mapping configuration to extend available log sources."
       path={routes.settingsLogSourcesCreate}

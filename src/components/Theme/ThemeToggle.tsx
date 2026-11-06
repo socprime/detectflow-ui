@@ -1,5 +1,6 @@
+import { Button } from '@socprime/react-ui';
+
 import { useThemeStore } from '@/store/theme';
-import { Button } from '../Button';
 
 export function ThemeToggle() {
   const theme = useThemeStore((s) => s.theme);

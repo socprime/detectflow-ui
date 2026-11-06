@@ -1,5 +1,6 @@
-import { routes } from '@/models/router/routes';
 import { UserIcon } from 'lucide-react';
+
+import { routes } from '@/models/router/routes';
 
 export const tabs = [
   {

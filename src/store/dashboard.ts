@@ -1,60 +1,10 @@
-import { dashboardSSEConfig } from '@/config/sse';
-import type { SSEDashboardData, SSEMessage, SSEMessageType } from '@/config/types';
-import { api } from '@/models/providers';
+import type { DashboardStructure, DashboardValues, MetricMode, NodeSelection } from '@/types';
 import { create } from 'zustand';
 
-export type MetricMode = 'events' | 'tagged';
-
-export interface SourceTopicMetric {
-  id: string;
-  name: string;
-  eps: number;
-}
-
-export interface RepositoryMetric {
-  id: string;
-  name: string;
-  rulesCount: number;
-}
-
-export interface DestinationTopicMetric {
-  id: string;
-  name: string;
-  taggedEps: number;
-  untaggedEps: number;
-}
-
-export interface DashboardStructure {
-  sourceTopics: SourceTopicMetric[];
-  repositories: RepositoryMetric[];
-  destinationTopics: DestinationTopicMetric[];
-}
-
-export interface MetricValue {
-  events: number;
-  tagged: number;
-  untagged: number;
-}
-
-export interface DashboardValues {
-  sourceTopicsTotal: MetricValue;
-  repositoriesTotal: number;
-  destinationTopicsTotal: MetricValue;
-  pipelines: number;
-}
-
-export type NodeSelectionType =
-  | 'source'
-  | 'destination'
-  | 'sourceMore'
-  | 'destMore'
-  | 'repository'
-  | 'repoMore';
-
-export interface NodeSelection {
-  id: string;
-  type: NodeSelectionType;
-}
+import { dashboardSSEConfig } from '@/config/sse';
+import type { SSEDashboardData } from '@/config/types';
+import { api } from '@/models/providers';
+import { SSEManager } from '@/services/sse/SSEManager';
 
 interface DashboardState {
   loading: boolean;
@@ -68,12 +18,13 @@ interface DashboardState {
   tablePiplinesOpen: boolean;
   lastUpdate: Date | null;
   consumerHealthy: boolean;
-
   selectedNode: NodeSelection | null;
   selectedSources: string[];
   selectedDestinations: string[];
   selectedRepos: string[];
+}
 
+interface DashboardActions {
   fetchSnapshot: () => Promise<void>;
   updateFromSSE: (data: SSEDashboardData) => void;
   setSSEConnected: (connected: boolean) => void;
@@ -82,7 +33,6 @@ interface DashboardState {
   setTablePiplinesOpen: (open: boolean) => void;
   clearError: () => void;
   reset: () => void;
-
   setNodeSelection: (
     node: NodeSelection | null,
     sources: string[],
@@ -90,29 +40,13 @@ interface DashboardState {
     repos: string[],
   ) => void;
   clearNodeSelection: () => void;
-
   initializeSSE: () => void;
   disconnectSSE: () => void;
 }
 
-const initialState: Pick<
-  DashboardState,
-  | 'loading'
-  | 'error'
-  | 'dashboardStructure'
-  | 'dashboardValues'
-  | 'dashboardData'
-  | 'sseConnected'
-  | 'sseEnabled'
-  | 'metricMode'
-  | 'tablePiplinesOpen'
-  | 'lastUpdate'
-  | 'consumerHealthy'
-  | 'selectedNode'
-  | 'selectedSources'
-  | 'selectedDestinations'
-  | 'selectedRepos'
-> = {
+type DashboardStore = DashboardState & DashboardActions;
+
+const initialState: DashboardState = {
   loading: false,
   error: null,
   dashboardStructure: null,
@@ -130,190 +64,77 @@ const initialState: Pick<
   selectedRepos: [],
 };
 
+const round = (num: number) => Math.round(num * 100) / 100;
+
 const transformSSEData = (
   data: SSEDashboardData,
 ): { structure: DashboardStructure; values: DashboardValues } => {
-  const structure: DashboardStructure = {
-    sourceTopics: data.graph.source_topics.map((topic) => ({
-      id: topic.id,
-      name: topic.name,
-      eps: topic.eps,
-    })),
-    repositories: data.graph.repositories.map((repo) => ({
-      id: repo.id,
-      name: repo.name,
-      rulesCount: repo.rules_count,
-    })),
-    destinationTopics: data.graph.destination_topics.map((topic) => ({
-      id: topic.id,
-      name: topic.name,
-      taggedEps: topic.tagged_eps,
-      untaggedEps: topic.untagged_eps,
-    })),
-  };
+  const {
+    source_topics,
+    repositories,
+    destination_topics,
+    total_events_eps,
+    total_tagged_eps,
+    total_untagged_eps,
+    total_rules,
+    pipelines_count,
+  } = data.graph;
 
-  const totalSourceEvents = data.graph.source_topics.reduce((sum, t) => sum + t.eps, 0);
-  const totalDestTagged = data.graph.destination_topics.reduce((sum, t) => sum + t.tagged_eps, 0);
-  const totalDestUntagged = data.graph.destination_topics.reduce(
-    (sum, t) => sum + t.untagged_eps,
-    0,
-  );
+  const totalSourceEvents = source_topics.reduce((sum, t) => sum + t.eps, 0);
+  const totalDestTagged =
+    total_tagged_eps ?? destination_topics.reduce((sum, t) => sum + t.tagged_eps, 0);
+  const totalDestUntagged =
+    total_untagged_eps ?? destination_topics.reduce((sum, t) => sum + t.untagged_eps, 0);
   const totalDestEvents = totalDestTagged + totalDestUntagged;
 
-  const values: DashboardValues = {
-    sourceTopicsTotal: {
-      events: Math.round(totalSourceEvents * 100) / 100,
-      tagged: Math.round(data.graph.total_events_eps * 100) / 100,
-      untagged: 0,
+  return {
+    structure: {
+      sourceTopics: source_topics.map((t) => ({ id: t.id, name: t.name, eps: t.eps })),
+      repositories: repositories.map((r) => ({
+        id: r.id,
+        name: r.name,
+        rulesCount: r.rules_count,
+      })),
+      destinationTopics: destination_topics.map((t) => ({
+        id: t.id,
+        name: t.name,
+        taggedEps: t.tagged_eps,
+        untaggedEps: t.untagged_eps,
+      })),
     },
-    repositoriesTotal: data.graph.total_rules,
-    destinationTopicsTotal: {
-      events: Math.round(totalDestEvents * 100) / 100,
-      tagged: Math.round(totalDestTagged * 100) / 100,
-      untagged: Math.round(totalDestUntagged * 100) / 100,
+    values: {
+      sourceTopicsTotal: {
+        events: round(totalSourceEvents),
+        tagged: round(total_events_eps),
+        untagged: 0,
+      },
+      repositoriesTotal: total_rules,
+      destinationTopicsTotal: {
+        events: round(totalDestEvents),
+        tagged: round(totalDestTagged),
+        untagged: round(totalDestUntagged),
+      },
+      pipelines: pipelines_count,
     },
-    pipelines: data.graph.pipelines_count,
   };
-
-  return { structure, values };
 };
 
-class DashboardSSEManager {
-  private eventSource: EventSource | null = null;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-  private reconnectAttempts = 0;
-  private config: typeof dashboardSSEConfig;
-  private callbacks: {
-    onDataUpdate: (data: SSEDashboardData) => void;
-    onConnected: (connected: boolean) => void;
-    onError: (error: string) => void;
-  };
-  private isDisconnecting = false;
+let sseManagerInstance: SSEManager<SSEDashboardData> | null = null;
 
-  constructor(
-    config: typeof dashboardSSEConfig,
-    callbacks: {
-      onDataUpdate: (data: SSEDashboardData) => void;
-      onConnected: (connected: boolean) => void;
-      onError: (error: string) => void;
-    },
-  ) {
-    this.config = config;
-    this.callbacks = callbacks;
-  }
-
-  connect() {
-    if (this.eventSource?.readyState === EventSource.OPEN) return;
-    if (this.isDisconnecting) return;
-
-    try {
-      this.eventSource = new EventSource(this.config.streamUrl, {
-        withCredentials: true,
-      });
-
-      this.eventSource.onopen = () => {
-        this.reconnectAttempts = 0;
-        this.callbacks.onConnected(true);
-      };
-
-      this.eventSource.onmessage = (event) => {
-        try {
-          const message: SSEMessage = JSON.parse(event.data);
-          this.handleMessage(message);
-        } catch (err) {
-          console.error('[SSE] Parse error:', err);
-        }
-      };
-
-      this.eventSource.onerror = (error) => {
-        console.error('[SSE] Error:', error);
-        this.callbacks.onConnected(false);
-
-        this.eventSource = null;
-
-        if (!this.isDisconnecting) {
-          this.attemptReconnect();
-        }
-      };
-    } catch (err) {
-      console.error('[SSE] Connection failed:', err);
-      this.callbacks.onError('SSE connection failed');
-    }
-  }
-
-  private handleMessage(message: SSEMessage) {
-    switch (message.type) {
-      case 'dashboard_update' as SSEMessageType:
-        if ('data' in message && message.data) {
-          this.callbacks.onDataUpdate(message.data);
-        }
-        break;
-      case 'error' as SSEMessageType:
-        if ('error' in message) {
-          this.callbacks.onError(message.error);
-        }
-        break;
-      default:
-        console.warn('[SSE] Unknown message type:', message.type);
-    }
-  }
-
-  private attemptReconnect() {
-    if (!this.config.reconnect) return;
-    if (this.reconnectAttempts >= (this.config.reconnectAttempts || 10)) {
-      console.error('[SSE] Max reconnect attempts reached');
-      return;
-    }
-
-    this.reconnectTimer = setTimeout(() => {
-      console.log('[SSE] Attempting reconnect...');
-      this.reconnectAttempts++;
-      this.connect();
-    }, this.config.reconnectInterval || 3000);
-  }
-
-  disconnect() {
-    this.isDisconnecting = true;
-
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
-    }
-
-    this.isDisconnecting = false;
-  }
-}
-
-let sseManagerInstance: DashboardSSEManager | null = null;
-
-export const useDashboardStore = create<DashboardState>((set, get) => ({
+export const useDashboardStore = create<DashboardStore>((set, get) => ({
   ...initialState,
 
   initializeSSE: () => {
-    if (sseManagerInstance) return;
+    if (sseManagerInstance || !get().sseEnabled || !dashboardSSEConfig.enabled) return;
 
-    const state = get();
-    if (!state.sseEnabled || !dashboardSSEConfig.enabled) return;
-
-    const callbacks = {
-      onDataUpdate: (data: SSEDashboardData) => {
-        get().updateFromSSE(data);
-      },
-      onConnected: (connected: boolean) => {
-        get().setSSEConnected(connected);
-      },
-      onError: (error: string) => {
-        console.error('[SSE]', error);
+    sseManagerInstance = new SSEManager<SSEDashboardData>(dashboardSSEConfig, {
+      onDataUpdate: (data) => get().updateFromSSE(data),
+      onConnected: (connected) => get().setSSEConnected(connected),
+      onError: (error) => {
+        console.error('[Dashboard SSE]', error);
         set({ error });
       },
-    };
-
-    sseManagerInstance = new DashboardSSEManager(dashboardSSEConfig, callbacks);
+    });
     sseManagerInstance.connect();
   },
 
@@ -327,7 +148,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
   fetchSnapshot: async () => {
     set({ loading: true, error: null });
-
     try {
       const data = await api.dashboard.getSnapshot();
       const { structure, values } = transformSSEData(data);
@@ -342,15 +162,15 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         error: null,
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch snapshot';
-      set({ error: errorMessage, loading: false });
-      console.error('[Dashboard] Snapshot fetch error:', error);
+      set({
+        error: error instanceof Error ? error.message : 'Failed to fetch snapshot',
+        loading: false,
+      });
     }
   },
 
-  updateFromSSE: (data: SSEDashboardData) => {
+  updateFromSSE: (data) => {
     const { structure, values } = transformSSEData(data);
-
     set({
       dashboardData: data,
       dashboardStructure: structure,
@@ -360,56 +180,34 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     });
   },
 
-  setSSEConnected: (connected: boolean) => {
-    set({ sseConnected: connected });
-  },
+  setSSEConnected: (connected) => set({ sseConnected: connected }),
 
-  setSSEEnabled: (enabled: boolean) => {
-    const state = get();
+  setSSEEnabled: (enabled) => {
     set({ sseEnabled: enabled });
-
     if (enabled && !sseManagerInstance) {
-      state.initializeSSE();
+      get().initializeSSE();
     } else if (!enabled && sseManagerInstance) {
-      state.disconnectSSE();
+      get().disconnectSSE();
     }
   },
 
-  setMetricMode: (mode: MetricMode) => {
-    set({ metricMode: mode });
-  },
+  setMetricMode: (mode) => set({ metricMode: mode }),
+  setTablePiplinesOpen: (open) => set({ tablePiplinesOpen: open }),
 
-  setTablePiplinesOpen: (open: boolean) => {
-    set({ tablePiplinesOpen: open });
-  },
-
-  setNodeSelection: (node, sources, destinations, repos) => {
+  setNodeSelection: (node, sources, destinations, repos) =>
     set({
       selectedNode: node,
       selectedSources: sources,
       selectedDestinations: destinations,
       selectedRepos: repos,
-    });
-  },
+    }),
 
-  clearNodeSelection: () => {
-    set({
-      selectedNode: null,
-      selectedSources: [],
-      selectedDestinations: [],
-      selectedRepos: [],
-    });
-  },
-
-  clearError: () => {
-    set({ error: null });
-  },
+  clearNodeSelection: () =>
+    set({ selectedNode: null, selectedSources: [], selectedDestinations: [], selectedRepos: [] }),
+  clearError: () => set({ error: null }),
 
   reset: () => {
-    if (sseManagerInstance) {
-      sseManagerInstance.disconnect();
-      sseManagerInstance = null;
-    }
+    get().disconnectSSE();
     set(initialState);
   },
 }));
