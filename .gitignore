@@ -7,3 +7,4 @@ dist
 requirements.txt
 tsconfig.tsbuildinfo
 yarn.lock
+!app/yarn.lock
