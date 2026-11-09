@@ -1,6 +1,6 @@
-# DetectFlow UI (Open Source)
+# Prime Detect UI (Open Source)
 
-Web interface for administering DetectFlow pipelines based on Apache Flink.
+A web interface for managing Prime Detect OSS (formerly DetectFlow) pipelines built on Apache Flink. It’s part of Prime Detect OSS by SOC Prime — check out the [README](https://github.com/socprime/detectflow-main) for more details and setup instructions.
 
 ## Description
 
